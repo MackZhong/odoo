@@ -1,53 +1,31 @@
-odoo.define('im_livechat.chat_backend', function (require) {
+odoo.define('im_livechat.chat_client_action', function (require) {
 "use strict";
 
-var mail_chat_backend = require('mail.chat_backend');
+require('mail.chat_client_action');
+var chat_manager = require('mail.chat_manager');
+var core = require('web.core');
 
+core.action_registry.get('mail.chat.instant_messaging').include({
+    _renderSidebar: function (options) {
+        // Override to sort livechat channels by last message's date
+        var channel_partition = _.partition(options.channels, function (channel) {
+            return channel.type === 'livechat';
+        });
+        channel_partition[0].sort(function (c1, c2) {
+            return c2.last_message_date.diff(c1.last_message_date);
+        });
+        options.channels = channel_partition[0].concat(channel_partition[1]);
+        return this._super(options);
+    },
+});
 
-/**
- * Patch for the client action to integrate Livechat Mail Channel in a particular slot
- */
-mail_chat_backend.ChatMailThread.include({
-    init: function(parent, action){
-        this._super.apply(this, arguments);
-        this.set('channel_livechat', []);
-    },
-    start: function(){
-        var self = this;
-        this.on("change:channel_livechat", this, function(){
-            self.channel_render('channel_livechat');
-        });
-            self.$el.on('click', '.o_mail_chat_channel_unpin', _.bind(self.on_click_channel_unpin, self));
-        return this._super.apply(this, arguments).then(function(){
-        });
-    },
-    on_click_channel_unpin: function(event){
-        var self = this;
-        var channel_id = this.$(event.currentTarget).data('channel-id');
-        var channel = this.channels[channel_id];
-        return this.channel_pin(channel.uuid, false).then(function(){
-            self.channel_remove(channel_id);
-            // if unpin current channel, switch to inbox
-            if(self.get('current_channel_id') === channel_id){
-                self.set('current_channel_id', 'channel_inbox');
-            }
-        });
-    },
-    channel_change: function(){
-        // update the default username
-        var current_channel = this.channels[this.get('current_channel_id')];
-        if(current_channel){
-            this.options.default_username = current_channel.anonymous_name || this.options.default_username
+chat_manager.bus.on('new_message', null, function (msg) {
+    _.each(msg.channel_ids, function (channel_id) {
+        var channel = chat_manager.get_channel(channel_id);
+        if (channel) {
+            channel.last_message_date = msg.date; // update the last message's date of the channel
         }
-        return this._super.apply(this, arguments);
-    },
-    // utils function
-    get_channel_slot: function(channel){
-        if(channel.channel_type === 'livechat'){
-            return 'channel_livechat';
-        }
-        return this._super.apply(this, arguments);
-    },
+    });
 });
 
 });

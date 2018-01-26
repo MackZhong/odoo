@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from openerp import api, fields, models
+from odoo import api, fields, models
 
 
 class Followers(models.Model):
@@ -17,14 +18,17 @@ class Followers(models.Model):
     _log_access = False
     _description = 'Document Followers'
 
+    # Note. There is no integrity check on model names for performance reasons.
+    # However, followers of unlinked models are deleted by models themselves
+    # (see 'ir.model' inheritance).
     res_model = fields.Char(
-        'Related Document Model', required=True, select=1, help='Model of the followed resource')
+        'Related Document Model Name', required=True, index=True)
     res_id = fields.Integer(
-        'Related Document ID', select=1, help='Id of the followed resource')
+        'Related Document ID', index=True, help='Id of the followed resource')
     partner_id = fields.Many2one(
-        'res.partner', string='Related Partner', ondelete='cascade', select=1)
+        'res.partner', string='Related Partner', ondelete='cascade', index=True)
     channel_id = fields.Many2one(
-        'mail.channel', string='Listener', ondelete='cascade', select=1)
+        'mail.channel', string='Listener', ondelete='cascade', index=True)
     subtype_ids = fields.Many2many(
         'mail.message.subtype', string='Subtype',
         help="Message subtypes followed, meaning subtypes that will be pushed onto the user's Wall.")
@@ -35,7 +39,7 @@ class Followers(models.Model):
         :param force: if True, delete existing followers before creating new one
                       using the subtypes given in the parameters
         """
-        force_mode = force or (all(data for data in partner_data.values()) and all(data for data in channel_data.values()))
+        force_mode = force or (all(partner_data.values()) and all(channel_data.values()))
         generic = []
         specific = {}
         existing = {}  # {res_id: follower_ids}
@@ -45,7 +49,7 @@ class Followers(models.Model):
         followers = self.sudo().search([
             '&',
             '&', ('res_model', '=', res_model), ('res_id', 'in', res_ids),
-            '|', ('partner_id', 'in', partner_data.keys()), ('channel_id', 'in', channel_data.keys())])
+            '|', ('partner_id', 'in', list(partner_data)), ('channel_id', 'in', list(channel_data))])
 
         if force_mode:
             followers.unlink()
@@ -57,21 +61,24 @@ class Followers(models.Model):
                 if follower.channel_id:
                     c_exist.setdefault(follower.channel_id.id, list()).append(follower.res_id)
 
-        default_subtypes = self.env['mail.message.subtype'].search([
-            ('default', '=', True),
-            '|', ('res_model', '=', res_model), ('res_model', '=', False)])
+        default_subtypes, _internal_subtypes, external_subtypes = \
+            self.env['mail.message.subtype'].default_subtypes(res_model)
 
         if force_mode:
-            for pid, data in partner_data.iteritems():
+            employee_pids = self.env['res.users'].sudo().search([('partner_id', 'in', list(partner_data)), ('share', '=', False)]).mapped('partner_id').ids
+            for pid, data in partner_data.items():
                 if not data:
-                    partner_data[pid] = default_subtypes.ids
-            for cid, data in channel_data.iteritems():
+                    if pid not in employee_pids:
+                        partner_data[pid] = external_subtypes.ids
+                    else:
+                        partner_data[pid] = default_subtypes.ids
+            for cid, data in channel_data.items():
                 if not data:
                     channel_data[cid] = default_subtypes.ids
 
         # create new followers, batch ok
-        gen_new_pids = [pid for pid in partner_data.keys() if pid not in p_exist]
-        gen_new_cids = [cid for cid in channel_data.keys() if cid not in c_exist]
+        gen_new_pids = [pid for pid in partner_data if pid not in p_exist]
+        gen_new_cids = [cid for cid in channel_data if cid not in c_exist]
         for pid in gen_new_pids:
             generic.append([0, 0, {'res_model': res_model, 'partner_id': pid, 'subtype_ids': [(6, 0, partner_data.get(pid) or default_subtypes.ids)]}])
         for cid in gen_new_cids:
@@ -83,8 +90,8 @@ class Followers(models.Model):
                 command = []
                 doc_followers = existing.get(res_id, list())
 
-                new_pids = set(partner_data.keys()) - set([sub.partner_id.id for sub in doc_followers if sub.partner_id]) - set(gen_new_pids)
-                new_cids = set(channel_data.keys()) - set([sub.channel_id.id for sub in doc_followers if sub.channel_id]) - set(gen_new_cids)
+                new_pids = set(partner_data) - set([sub.partner_id.id for sub in doc_followers if sub.partner_id]) - set(gen_new_pids)
+                new_cids = set(channel_data) - set([sub.channel_id.id for sub in doc_followers if sub.channel_id]) - set(gen_new_cids)
 
                 # subscribe new followers
                 for new_pid in new_pids:
@@ -107,23 +114,31 @@ class Followers(models.Model):
     # Modifying followers change access rights to individual documents. As the
     # cache may contain accessible/inaccessible data, one has to refresh it.
     #
+    @api.multi
+    def _invalidate_documents(self):
+        """ Invalidate the cache of the documents followed by ``self``. """
+        for record in self:
+            if record.res_id:
+                self.env[record.res_model].invalidate_cache(ids=[record.res_id])
+
     @api.model
     def create(self, vals):
         res = super(Followers, self).create(vals)
-        self.invalidate_cache()
+        res._invalidate_documents()
         return res
 
     @api.multi
     def write(self, vals):
+        if 'res_model' in vals or 'res_id' in vals:
+            self._invalidate_documents()
         res = super(Followers, self).write(vals)
-        self.invalidate_cache()
+        self._invalidate_documents()
         return res
 
     @api.multi
     def unlink(self):
-        res = super(Followers, self).unlink()
-        self.invalidate_cache()
-        return res
+        self._invalidate_documents()
+        return super(Followers, self).unlink()
 
     _sql_constraints = [
         ('mail_followers_res_partner_res_model_id_uniq', 'unique(res_model,res_id,partner_id)', 'Error, a partner cannot follow twice the same object.'),

@@ -2,13 +2,8 @@ odoo.define('web_settings_dashboard', function (require) {
 "use strict";
 
 var core = require('web.core');
-var Widget = require('web.Widget');
-var Model = require('web.Model');
-var session = require('web.session');
-var PlannerCommon = require('web.planner.common');
 var framework = require('web.framework');
-var webclient = require('web.web_client');
-var PlannerDialog = PlannerCommon.PlannerDialog;
+var Widget = require('web.Widget');
 
 var QWeb = core.qweb;
 var _t = core._t;
@@ -16,53 +11,55 @@ var _t = core._t;
 var Dashboard = Widget.extend({
     template: 'DashboardMain',
 
-    events: {
-        'click .o_browse_apps': 'on_new_apps',
+    init: function(){
+        this.all_dashboards = ['apps', 'invitations', 'share', 'translations', 'company'];
+        return this._super.apply(this, arguments);
     },
 
     start: function(){
-        return this.load(['apps', 'invitations', 'planner', 'share'])
+        return this.load(this.all_dashboards);
     },
 
     load: function(dashboards){
         var self = this;
         var loading_done = new $.Deferred();
-        session.rpc("/web_settings_dashboard/data", {}).then(function (data) {
-            // Load each dashboard
-            var all_dashboards_defs = []
-            _.each(dashboards, function(dashboard) {
-                var dashboard_def = self['load_' + dashboard](data);
-                if (dashboard_def) {
-                    all_dashboards_defs.push(dashboard_def);
-                }
-            });
+        this._rpc({route: '/web_settings_dashboard/data'})
+            .then(function (data) {
+                // Load each dashboard
+                var all_dashboards_defs = [];
+                _.each(dashboards, function(dashboard) {
+                    var dashboard_def = self['load_' + dashboard](data);
+                    if (dashboard_def) {
+                        all_dashboards_defs.push(dashboard_def);
+                    }
+                });
 
-            // Resolve loading_done when all dashboards defs are resolved
-            $.when.apply($, all_dashboards_defs).then(function() {
-                loading_done.resolve();
+                // Resolve loading_done when all dashboards defs are resolved
+                $.when.apply($, all_dashboards_defs).then(function() {
+                    loading_done.resolve();
+                });
             });
-        });
         return loading_done;
     },
 
     load_apps: function(data){
-        this.$('.o_web_settings_dashboard_apps').append(QWeb.render("DashboardApps", data['apps']));
+        return  new DashboardApps(this, data.apps).replace(this.$('.o_web_settings_dashboard_apps'));
     },
 
     load_share: function(data){
-        return new DashboardShare(this, {}).replace(this.$('.o_web_settings_dashboard_share'));
+        return new DashboardShare(this, data.share).replace(this.$('.o_web_settings_dashboard_share'));
     },
 
     load_invitations: function(data){
-        return new DashboardInvitations(this, data['users_info']).replace(this.$('.o_web_settings_dashboard_invitations'));
+        return new DashboardInvitations(this, data.users_info).replace(this.$('.o_web_settings_dashboard_invitations'));
     },
 
-    load_planner: function(data){
-        return  new DashboardPlanner(this, data['planner']).replace(this.$('.o_web_settings_dashboard_planner'));
+    load_translations: function (data) {
+        return new DashboardTranslations(this, data.translations).replace(this.$('.o_web_settings_dashboard_translations'));
     },
 
-    on_new_apps: function(){
-        this.do_action('base.open_module_tree');
+    load_company: function (data) {
+        return new DashboardCompany(this, data.company).replace(this.$('.o_web_settings_dashboard_company'));
     }
 });
 
@@ -72,6 +69,7 @@ var DashboardInvitations = Widget.extend({
         'click .o_web_settings_dashboard_invitations': 'send_invitations',
         'click .o_web_settings_dashboard_access_rights': 'on_access_rights_clicked',
         'click .o_web_settings_dashboard_user': 'on_user_clicked',
+        'click .o_web_settings_dashboard_more': 'on_more',
     },
     init: function(parent, data){
         this.data = data;
@@ -81,10 +79,10 @@ var DashboardInvitations = Widget.extend({
     send_invitations: function(e){
         var self = this;
         var $target = $(e.currentTarget);
-        var user_emails =  _.filter(this.$('#user_emails').val().split(/[\n, ]/), function(email){
-            return email != "";
+        var user_emails =  _.filter($(e.delegateTarget).find('#user_emails').val().split(/[\n, ]/), function(email){
+            return email !== "";
         });
-        var re = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+        var re = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,63}(?:\.[a-z]{2})?)$/i;
         var is_valid_emails = _.every(user_emails, function(email) {
             return re.test(email);
         });
@@ -93,15 +91,18 @@ var DashboardInvitations = Widget.extend({
             $target.prop('disabled', true);
             $target.find('i.fa-cog').removeClass('hidden');
             // Try to create user accountst
-            new Model("res.users")
-                .call("web_dashboard_create_users", [user_emails])
+            this._rpc({
+                    model: 'res.users',
+                    method: 'web_dashboard_create_users',
+                    args: [user_emails],
+                })
                 .then(function() {
                     self.reload();
                 })
                 .always(function() {
                     // Re-enable button
-                    self.$('.o_web_settings_dashboard_invitations').prop('disabled', false);
-                    self.$('i.fa-cog').addClass('hidden');
+                    $(e.delegateTarget).find('.o_web_settings_dashboard_invitations').prop('disabled', false);
+                    $(e.delegateTarget).find('i.fa-cog').addClass('hidden');
                 });
 
         }
@@ -127,7 +128,22 @@ var DashboardInvitations = Widget.extend({
             res_model: 'res.users',
             views: [[this.data.user_form_view_id, 'form']],
             res_id: user_id,
-        }
+        };
+        this.do_action(action,{
+            on_reverse_breadcrumb: function(){ return self.reload();}
+        });
+    },
+    on_more: function(e) {
+        var self = this;
+        e.preventDefault();
+        var action = {
+            type: 'ir.actions.act_window',
+            view_type: 'form',
+            view_mode: 'tree,form',
+            res_model: 'res.users',
+            domain: [['log_ids', '=', false]],
+            views: [[false, 'list'], [false, 'form']],
+        };
         this.do_action(action,{
             on_reverse_breadcrumb: function(){ return self.reload();}
         });
@@ -137,82 +153,35 @@ var DashboardInvitations = Widget.extend({
     },
 });
 
-var DashboardPlanner = Widget.extend({
+var DashboardApps = Widget.extend({
 
-    template: 'DashboardPlanner',
+    template: 'DashboardApps',
 
     events: {
-        'click .o_web_settings_dashboard_progress_title,.progress': 'on_planner_clicked',
+        'click .o_browse_apps': 'on_new_apps',
+        'click .o_confirm_upgrade': 'confirm_upgrade',
     },
 
     init: function(parent, data){
         this.data = data;
         this.parent = parent;
-        this.planner_by_menu = {};
+        return this._super.apply(this, arguments);
+    },
+
+    start: function() {
         this._super.apply(this, arguments);
-    },
-
-    willStart:function(){
-        var self = this;
-        return new Model('web.planner').query().all().then(function(res) {
-            self.planners = res;
-            _.each(self.planners, function(planner) {
-                self.planner_by_menu[planner.menu_id[0]] = planner;
-                self.planner_by_menu[planner.menu_id[0]].data = $.parseJSON(planner.data) || {};
-            });
-            self.set_overall_progress();
-        });
-    },
-
-    update_planner_progress: function(){
-        this.set_overall_progress();
-        this.$('.o_web_settings_dashboard_planners_list').replaceWith(
-            QWeb.render("DashboardPlanner.PlannersList", {'planners': this.planners})
-        );
-    },
-
-    set_overall_progress: function(){
-        var self = this;
-        this.sort_planners_list();
-        var average = _.reduce(self.planners, function(memo, planner) {
-            return planner.progress + memo;
-        }, 0) / (self.planners.length || 1);
-        self.overall_progress = Math.floor(average);
-        self.$('.o_web_settings_dashboard_planner_overall_progress').text(self.overall_progress);
-    },
-
-    sort_planners_list: function(){
-        // sort planners alphabetically but with fully completed planners at the end:
-        this.planners = _.sortBy(this.planners, function(planner){return (planner.progress == 100) + planner.name});
-    },
-
-    on_planner_clicked: function(e){
-
-        var menu_id = $(e.currentTarget).attr('data-menu-id');
-        // Setup the planner if we didn't do it yet
-        if (this.planner && this.planner.menu_id[0] == menu_id) {
-            this.dialog.$el.modal('show');
-        }
-        else {
-            this.setup_planner(menu_id);
+        if (odoo.db_info && _.last(odoo.db_info.server_version_info) !== 'e') {
+            $(QWeb.render("DashboardEnterprise")).appendTo(this.$el);
         }
     },
 
-    setup_planner: function(menu_id){
-        var self = this;
-        this.planner = self.planner_by_menu[menu_id];
-        if (this.dialog) {
-            this.dialog.destroy()
-        }
-        this.dialog = new PlannerDialog(this, this.planner);
-        this.dialog.on("planner_progress_changed", this, function(percent) {
-            self.planner.progress = percent;
-            self.update_planner_progress();
-        });
-        this.dialog.appendTo(webclient.$el).then(function() {
-            self.dialog.$el.modal('show');
-        });
-    }
+    on_new_apps: function(){
+        this.do_action('base.open_module_tree');
+    },
+
+    confirm_upgrade: function() {
+        framework.redirect("https://www.odoo.com/odoo-enterprise/upgrade?num_users=" + (this.data.enterprise_users || 1));
+    },
 });
 
 var DashboardShare = Widget.extend({
@@ -227,8 +196,8 @@ var DashboardShare = Widget.extend({
     init: function(parent, data){
         this.data = data;
         this.parent = parent;
-        this.share_url = 'http://www.odoo.com/';
-        this.share_text = encodeURIComponent("Discover #Odoo, awesome open source business apps: crm, project management, accounting, website builder, etc. https://www.odoo.com");
+        this.share_url = 'https://www.odoo.com';
+        this.share_text = encodeURIComponent("I am using #Odoo - Awesome open source business apps.");
     },
 
     share_twitter: function(){
@@ -254,13 +223,61 @@ var DashboardShare = Widget.extend({
     }
 });
 
+var DashboardTranslations = Widget.extend({
+    template: 'DashboardTranslations',
+
+    events: {
+        'click .o_load_translations': 'on_load_translations'
+    },
+
+    on_load_translations: function () {
+        this.do_action('base.action_view_base_language_install');
+    }
+
+});
+
+var DashboardCompany = Widget.extend({
+    template: 'DashboardCompany',
+
+    events: {
+        'click .o_setup_company': 'on_setup_company'
+    },
+
+    init: function (parent, data) {
+        this.data = data;
+        this.parent = parent;
+        this._super.apply(this, arguments);
+    },
+
+    on_setup_company: function () {
+        var self = this;
+        var action = {
+            type: 'ir.actions.act_window',
+            res_model: 'res.company',
+            view_mode: 'form',
+            view_type: 'form',
+            views: [[false, 'form']],
+            res_id: this.data.company_id
+        };
+        this.do_action(action, {
+            on_reverse_breadcrumb: function () { return self.reload(); }
+        });
+    },
+
+    reload: function () {
+        return this.parent.load(['company']);
+    }
+});
+
 core.action_registry.add('web_settings_dashboard.main', Dashboard);
 
 return {
     Dashboard: Dashboard,
+    DashboardApps: DashboardApps,
     DashboardInvitations: DashboardInvitations,
-    DashboardPlanner: DashboardPlanner,
     DashboardShare: DashboardShare,
+    DashboardTranslations: DashboardTranslations,
+    DashboardCompany: DashboardCompany
 };
 
 });

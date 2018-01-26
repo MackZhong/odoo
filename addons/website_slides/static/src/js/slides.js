@@ -6,12 +6,13 @@ var ajax = require('web.ajax');
 var core = require('web.core');
 var time = require('web.time');
 var Widget = require('web.Widget');
+var local_storage = require('web.local_storage');
+var websiteRootInstance = require('website.WebsiteRoot.instance');
 
 var _t = core._t;
 var page_widgets = {};
 
-$(document).ready(function () {
-
+(function () {
     var widget_parent = $('body');
 
 
@@ -22,9 +23,9 @@ $(document).ready(function () {
             // then return fix formate string else timeago
             display_str = "";
         if (datetime_obj && new Date().getTime() - datetime_obj.getTime() > 7 * 24 * 60 * 60 * 1000) {
-            display_str = datetime_obj.toDateString();
+            display_str = moment(datetime_obj).format('ll');
         } else {
-            display_str = $.timeago(datetime_obj);
+            display_str = moment(datetime_obj).fromNow();
         }
         $(el).text(display_str);
     });
@@ -55,10 +56,10 @@ $(document).ready(function () {
                 this.popover_alert(button, _.str.sprintf(_t('Please <a href="/web?redirect=%s">login</a> to vote this slide'), (document.URL)));
             }else{
                 var target = button.find('.fa');
-                if (localStorage['slide_vote_' + slide_id] !== user_id.toString()) {
+                if (local_storage.getItem('slide_vote_' + slide_id) !== user_id.toString()) {
                     ajax.jsonRpc(href, 'call', {slide_id: slide_id}).then(function (data) {
                         target.text(data);
-                        localStorage['slide_vote_' + slide_id] = user_id;
+                        local_storage.setItem('slide_vote_' + slide_id, user_id);
                     });
                 } else {
                     this.popover_alert(button, _t('You have already voted for this slide'));
@@ -215,7 +216,7 @@ $(document).ready(function () {
             });
         });
     }
-});
+})();
 
 return {
     page_widgets: page_widgets,

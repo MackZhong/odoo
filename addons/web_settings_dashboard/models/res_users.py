@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from datetime import datetime, timedelta
-
-from openerp import models, api, _
-from openerp.exceptions import RedirectWarning
-from openerp.tools.misc import DEFAULT_SERVER_DATETIME_FORMAT
+from odoo import models, api
 
 
-class Users(models.Model):
+class ResUsers(models.Model):
     _inherit = 'res.users'
 
     @api.model
@@ -23,6 +20,6 @@ class Users(models.Model):
         # Process new email addresses : create new users
         for email in new_emails:
             default_values = {'login': email, 'name': email.split('@')[0], 'email': email, 'active': True}
-            user = self.create(default_values)
+            user = self.with_context(signup_valid=True).create(default_values)
 
         return True

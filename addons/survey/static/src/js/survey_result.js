@@ -1,7 +1,7 @@
 odoo.define('survey.result', function (require) {
 'use strict';
 
-var website = require('website.website');
+require('web.dom_ready');
 
 if(!$('.js_surveyresult').length) {
     return $.Deferred().reject("DOM doesn't contain '.js_surveyresult'");
@@ -50,12 +50,14 @@ if(!$('.js_surveyresult').length) {
 
     //initialize discreteBar Chart
     function init_bar_chart(){
-        return nv.models.discreteBarChart()
+        var chart = nv.models.discreteBarChart()
             .x(function(d) { return d.text; })
             .y(function(d) { return d.count; })
             .staggerLabels(true)
-            .tooltips(false)
             .showValues(true);
+
+        chart.tooltip.enabled(false);
+        return chart;
     }
 
     //initialize Pie Chart

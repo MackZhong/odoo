@@ -1,30 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
-
-<div t-name="project.SetCoverModal" class="modal" tabindex="-1" data-backdrop="static" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&amp;times;</button>
-                <h4 class="modal-title">Set a Cover Image</h4>
-            </div>
-            <div class="modal-body">
-                <div class="container-fluid">
-                    <div t-if="attachment_ids.length > 0" class="row">
-                        <t t-foreach="attachment_ids" t-as="attachment">
-                            <div class="col-sm-3 o_image" style="height: 100%">
-                                <img style="cursor: pointer; width: 100%" t-att-src="'/web/image/' + attachment['id'] + '?unique=1'" t-att-data-id="attachment['id']"/>
-                            </div>
-                        </t>
-                    </div>
-                    <div t-if="attachment_ids.length == 0">
-                        There is no available image to be set as cover. Send a message on the task with an attached image.
-                    </div>
+    <t t-name="project.SetCoverModal">
+        <div t-if="attachment_ids.length > 0" class="ml32 mr0 o_kanban_task_cover_container">
+            <t t-foreach="attachment_ids" t-as="attachment">
+                <div t-attf-class="o_kanban_task_cover_image#{cover_id == attachment['id'] ? ' o_selected' : ''}">
+                    <img t-attf-src="/web/image/#{attachment['id']}?unique=1" t-att-data-id="attachment['id']" t-att-data-name="attachment['name']"/>
                 </div>
-            </div>
-            <div class="modal-footer"><button type="button" class="btn btn-primary" data-dismiss="modal">Close</button></div>
+            </t>
         </div>
-    </div>
-</div>
-
+        <div t-if="attachment_ids.length == 0">There is no available image to be set as cover.</div>
+        <span class="hide">
+            <t t-call="HiddenInputFile">
+                <t t-set="fileupload_id" t-value="widget.imageUploadID" />
+                <t t-set="fileupload_action" t-translation="off">/web/binary/upload_attachment</t>
+                <input type="hidden" name="model" t-att-value="widget.modelName" />
+                <input type="hidden" name="id" t-att-value="widget.id" />
+                <input type="hidden" name="session_id" t-att-value="widget.getSession().session_id" />
+            </t>
+        </span>
+    </t>
 </templates>

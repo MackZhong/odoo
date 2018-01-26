@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<openerp>
+<odoo>
     <data>
         <!-- mail.message tree: short view !-->
         <record model="ir.ui.view" id="view_message_tree">
@@ -59,11 +59,28 @@
                             </page>
                             <page string="Recipients">
                                 <group>
-                                    <field name="partner_ids" widget="many2many_tags"/>
-                                    <field name="channel_ids" widget="many2many_tags"/>
-                                    <field name="needaction_partner_ids" widget="many2many_tags"/>
-                                    <field name="starred_partner_ids" widget="many2many_tags"/>
+                                    <group>
+                                        <field name="partner_ids" widget="many2many_tags"/>
+                                        <field name="channel_ids" widget="many2many_tags"/>
+                                    </group>
+                                    <group>
+                                        <field name="needaction_partner_ids" widget="many2many_tags"/>
+                                        <field name="starred_partner_ids" widget="many2many_tags"/>
+                                    </group>
                                 </group>
+                                <group>
+                                    <field name="notification_ids">
+                                        <tree>
+                                            <field name="res_partner_id"/>
+                                            <field name="is_read"/>
+                                            <field name="is_email"/>
+                                            <field name="email_status"/>
+                                        </tree>
+                                    </field>
+                                </group>
+                            </page>
+                            <page string="Tracking">
+                                <field name="tracking_value_ids"/>
                             </page>
                         </notebook>
                     </sheet>
@@ -86,8 +103,12 @@
                     <field name="model"/>
                     <field name="res_id"/>
                     <field name="parent_id"/>
+                    <filter string="Has Mentions"
+                            name="filter_has_mentions"
+                            domain="[('partner_ids.user_ids', 'in', [uid])]"/>
+                    <separator/>
                     <filter string="Need Action"
-                            name="message_needaction" help="Important messages"
+                            name="message_needaction" help="Unread messages"
                             domain="[('needaction', '=', True)]"/>
                     <separator/>
                     <filter string="Has attachments"
@@ -113,21 +134,27 @@
             <field name="model">ir.attachment</field>
             <field name="arch" type="xml">
                 <kanban>
+                    <field name="id"/>
                     <field name="mimetype"/>
-                    <field name="url"/>
+                    <field name="type"/>
+                    <field name="datas_fname"/>
                     <field name="name"/>
                     <templates>
                         <t t-name="kanban-box">
                             <div class="oe_kanban_global_click">
                                 <div class="oe_kanban_vignette">
                                     <div class="oe_attachment">
-                                        <div>
-                                            <t t-set="webimage" t-value="new RegExp('image.*(gif|jpe|jpg|png)').test(record.mimetype.value)"/>
-                                            <div t-if="!webimage" class="o_image" t-att-data-mimetype="record.mimetype.value"/>
-                                            <img t-if="webimage" t-att-src="record.url.value"/>
-                                        </div>
                                         <div class="oe_name">
                                             <field name="name"/>
+                                        </div>
+                                        <div t-if="record.type.raw_value == 'binary'">
+                                            <a t-attf-href="/web/content/#{record.id.raw_value}?download=1">
+                                                <t t-set="webimage" t-value="new RegExp('image.*(gif|jpeg|jpg|png)').test(record.mimetype.value)"/>
+                                                <div t-if="!webimage" class="o_image" t-att-data-mimetype="record.mimetype.value"/>
+                                                <div t-if="webimage" class="o_attachment_image">
+                                                    <img t-attf-src="/web/image/#{record.id.raw_value}?download=1"/>
+                                                </div>
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -140,11 +167,11 @@
         <record id="base.action_attachment" model="ir.actions.act_window">
             <field name="view_mode">kanban,tree,form</field>
             <field name="help" type="html">
-              <p class="oe_view_nocontent_create">
-                Click here to attach new document.
+              <p class="o_view_nocontent_smiling_face">
+                Attach a new document
               </p>
             </field>
         </record>
 
     </data>
-</openerp>
+</odoo>

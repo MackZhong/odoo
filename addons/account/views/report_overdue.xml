@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 <template id="account.report_overdue_document">
-    <t t-call="report.external_layout">
+    <t t-call="web.external_layout">
         <div class="page">
             <div class="row">
                 <div class="col-xs-5 col-xs-offset-7">
                     <span t-field="o.name"/><br/>
-                    <span t-raw="o._address_display(None, None)[o.id].replace('\n\n', '\n').replace('\n', '&lt;br&gt;')"/>
+                    <span t-raw="o.contact_address.replace('\n\n', '\n').replace('\n', '&lt;br&gt;')"/>
                     <span t-field="o.vat"/>
                 </div>
                 <p>
@@ -16,7 +16,7 @@
                 </p>
 
                 <t t-if="Lines[o.id]">
-                    <span t-field="res_company.overdue_msg"/>
+                    <span t-field="res_company.with_context(lang=o.lang).overdue_msg"/>
                     <table class="table table-condensed" t-foreach="Lines[o.id]" t-as="currency">
                         <thead>
                             <tr>
@@ -44,10 +44,10 @@
                                 <span t-esc="line['ref']"/>
                             </td>
                             <td class="text-right">
-                                <span t-esc="line['debit']" t-esc-options='{"widget": "monetary", "display_currency": "currency"}'/>
+                                <span t-esc="line['debit']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
                             </td>
                             <td class="text-right">
-                                <span t-esc="line['credit']" t-esc-options='{"widget": "monetary", "display_currency": "currency"}'/>
+                                <span t-esc="line['credit']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
                             </td>
                             <td class="text-center">
                                 <span t-if="line['blocked']">x</span>
@@ -55,17 +55,17 @@
                         </tr>
                         <tr>
                             <td colspan="3"></td>
-                            <td><strong>Sub-Total :</strong></td>
-                            <td class="text-right"><span t-esc="Totals[o.id][currency]['due']" t-esc-options='{"widget": "monetary", "display_currency": "currency"}'/></td>
-                            <td class="text-right"><span t-esc="Totals[o.id][currency]['paid']" t-esc-options='{"widget": "monetary", "display_currency": "currency"}'/></td>
-                            <td class="text-right"><span t-esc="Totals[o.id][currency]['mat']" t-esc-options='{"widget": "monetary", "display_currency": "currency"}'/></td>
+                            <td><strong>Subtotal :</strong></td>
+                            <td class="text-right"><span t-esc="Totals[o.id][currency]['due']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                            <td class="text-right"><span t-esc="Totals[o.id][currency]['paid']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                            <td class="text-right"><span t-esc="Totals[o.id][currency]['mat']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colspan="3"></td>
                             <td><strong>Balance :</strong></td>
                             <td class="text-right">
-                                <span t-esc="Totals[o.id][currency]['due'] - Totals[o.id][currency]['paid']" t-esc-options='{"widget": "monetary", "display_currency": "currency"}'/>
+                                <span t-esc="Totals[o.id][currency]['due'] - Totals[o.id][currency]['paid']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
                             </td>
                         </tr>
                     </table>
@@ -79,7 +79,7 @@
 </template>
 
 <template id="report_overdue">
-    <t t-call="report.html_container">
+    <t t-call="web.html_container">
         <t t-foreach="docs" t-as="o">
             <t t-call="account.report_overdue_document" t-lang="o.lang"/>
         </t>

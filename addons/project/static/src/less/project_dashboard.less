@@ -1,66 +1,69 @@
 .o_kanban_view.o_kanban_dashboard.o_project_kanban {
-
-    .o_kanban_record {
-        .o-flex-display();
-        position: relative;
-    }
-
-    .o_project_kanban_main {
-        .o-flex(1, 0, 0);
-        padding: @odoo-horizontal-padding;
-
-        // give space for manage section at the bottom
-        margin-bottom: @odoo-horizontal-padding/2 + 19px;
-
-        .o_kanban_card_content {
-            font-size: 12px;
-            .o_primary {
-                font-size: larger;
-            }
-        }
-
-        .o_project_kanban_manage {
-            .o-position-absolute(@bottom: 0, @left: 0);
-            padding: @odoo-horizontal-padding/2 @odoo-horizontal-padding;
-        }
-        .o_kanban_card_manage_pane .o_kanban_card_manage_title {
-            margin: 0;
-        }
-    }
-
     .o_project_kanban_boxes {
-        .o-flex(0, 0, 30%);
-
         .o-flex-display();
-        .o-flex-flow(column, nowrap);
-
-        > a:hover {
-            text-decoration: none;
-        }
-
-        .o_value {
-            font-size: x-large;
-            color: white;
-            display: block;
-        }
-        .o_label {
-            color: white;
-        }
+        .o-flex-flow(row, nowrap);
 
         .o_project_kanban_box {
+            position: relative;
             text-align: center;
-            padding: 15px 0 15px 0;
+            padding: 0 0 0 0;
             .o-flex(1, 1, auto);
             .o-flex-display();
-            .o-align-items(center);
-            .o-flex-flow(column, nowrap);
+            .o-flex-flow(row, nowrap);
             .o-justify-content(center);
+
+            &:first-child {
+                .o-justify-content(flex-start);
+            }
+            &:last-child {
+                .o-justify-content(flex-end);
+            }
+
+            .o_value {
+                font-weight: 800;
+            }
+
+            > a {
+                font-weight: 500;
+
+                &.o_needaction{
+                    font-size: small;
+                    font-weight: 400;
+                    margin-left: 4px;
+                    .o-hover-opacity(0.5, 1);
+
+                    &:before {
+                        content: "/ ";
+                    }
+
+                    &:after {
+                        content: "\f086";
+                        font: normal normal normal 14px/1 FontAwesome;
+                    }
+                }
+            }
         }
-        .o_project_kanban_box:nth-child(even) {
-            background-color: grey;
+    }
+}
+
+.o_kanban_task_cover_container {
+    .o_kanban_task_cover_image {
+        display: inline-block;
+        position: relative;
+        height: 120px;
+        width: 120px;
+        margin: 10px;
+        cursor: pointer;
+        outline: 2px solid transparent;
+        box-shadow: 0px 0px 1px 1px #ccc;
+        &.o_selected {
+            outline-color: @odoo-brand-optional;
         }
-        .o_project_kanban_box:nth-child(odd) {
-            background-color: @odoo-brand-optional;
+        > img {
+            .o-position-absolute(@top: 0; @left: 0; @right: 0; @bottom: 0);
+            margin: auto;
+            max-height: 100%;
+            max-width: 100%;
         }
     }
 }

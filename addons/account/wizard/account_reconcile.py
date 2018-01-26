@@ -1,5 +1,5 @@
-from openerp import models, fields, api, _
-from openerp.tools.float_utils import float_round
+from odoo import models, fields, api, _
+from odoo.tools.float_utils import float_round
 
 
 class AccountMoveLineReconcile(models.TransientModel):
@@ -9,7 +9,7 @@ class AccountMoveLineReconcile(models.TransientModel):
     _name = 'account.move.line.reconcile'
     _description = 'Account move line reconcile'
 
-    trans_nbr = fields.Integer(string='# of Transaction', readonly=True)
+    trans_nbr = fields.Integer(string='Transaction Count', readonly=True)
     credit = fields.Float(string='Credit amount', readonly=True, digits=0)
     debit = fields.Float(string='Debit amount', readonly=True, digits=0)
     writeoff = fields.Float(string='Write-Off amount', readonly=True, digits=0)
@@ -35,10 +35,10 @@ class AccountMoveLineReconcile(models.TransientModel):
         credit = debit = 0
         lines = self.env['account.move.line'].browse(context.get('active_ids', []))
         for line in lines:
-            if not line.reconciled:
+            if not line.full_reconcile_id:
                 credit += line.credit
                 debit += line.debit
-        precision = self.company_id.currency_id.decimal_places
+        precision = self.env.user.company_id.currency_id.decimal_places
         writeoff = float_round(debit - credit, precision_digits=precision)
         credit = float_round(credit, precision_digits=precision)
         debit = float_round(debit, precision_digits=precision)
@@ -55,7 +55,14 @@ class AccountMoveLineReconcile(models.TransientModel):
     @api.multi
     def trans_rec_reconcile_full(self):
         move_lines = self.env['account.move.line'].browse(self._context.get('active_ids', []))
-        move_lines.reconcile()
+        #Don't consider entries that are already reconciled
+        move_lines_filtered = move_lines.filtered(lambda aml: not aml.reconciled)
+        #Because we are making a full reconciliation in batch, we need to consider use cases as defined in the test test_manual_reconcile_wizard_opw678153
+        #So we force the reconciliation in company currency only at first
+        move_lines_filtered.with_context(skip_full_reconcile_check='amount_currency_excluded').reconcile()
+
+        #then in second pass, consider the amounts in secondary currency (only if some lines are still not fully reconciled)
+        move_lines.force_full_reconcile()
         return {'type': 'ir.actions.act_window_close'}
 
 
@@ -70,7 +77,7 @@ class AccountMoveLineReconcileWriteoff(models.TransientModel):
     writeoff_acc_id = fields.Many2one('account.account', string='Write-Off account', required=True, domain=[('deprecated', '=', False)])
     date_p = fields.Date(string='Date', default=fields.Date.context_today)
     comment = fields.Char(required=True, default='Write-off')
-    analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account', domain=[('parent_id', '!=', False)])
+    analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account')
 
     @api.multi
     def trans_rec_addendum(self):
@@ -100,5 +107,14 @@ class AccountMoveLineReconcileWriteoff(models.TransientModel):
         if self.analytic_id:
             context['analytic_id'] = self.analytic_id.id
         move_lines = self.env['account.move.line'].browse(self._context.get('active_ids', []))
-        move_lines.with_context(context).reconcile(self.writeoff_acc_id, self.journal_id)
+        #Don't consider entries that are already reconciled
+        move_lines_filtered = move_lines.filtered(lambda aml: not aml.reconciled)
+        #Because we are making a full reconciliation in batch, we need to consider use cases as defined in the test test_manual_reconcile_wizard_opw678153
+        #So we force the reconciliation in company currency only at first,
+        context['skip_full_reconcile_check'] = 'amount_currency_excluded'
+        writeoff = move_lines_filtered.with_context(context).reconcile(self.writeoff_acc_id, self.journal_id)
+        #then in second pass, consider the amounts in secondary currency (only if some lines are still not fully reconciled)
+        if not isinstance(writeoff, bool):
+            move_lines += writeoff
+        move_lines.force_full_reconcile()
         return {'type': 'ir.actions.act_window_close'}

@@ -2,7 +2,7 @@
 <template>
     <t t-name="Many2ManyAttendeeTag" t-extend="FieldMany2ManyTag">
         <t t-jquery="span:first" t-operation="prepend">
-            <span t-attf-class="o_calendar_invitation #{el[2]}"/>
+            <span t-if="attendeesData[el_index]" t-attf-class="o_calendar_invitation #{attendeesData[el_index].status}"/>
         </t>
     </t>
 
@@ -20,11 +20,4 @@
         </t>
     </t>
 
-    <t t-extend="CalendarView.sidebar.responsible">
-        <t t-jquery="span[t-attf-class*='color_filter']" t-operation="after">
-            <t t-if="(filters_value.value != -1) &amp;&amp; (filters_value.is_remove != false)">
-                <span class="oe_remove_follower fa fa-times" title="Remove this favorite from the list" t-att-data-id="filters_value.value"/>
-           </t>
-        </t>
-    </t>
 </template>
