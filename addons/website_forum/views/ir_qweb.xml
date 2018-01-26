@@ -1,13 +1,13 @@
-<openerp>
+<odoo>
 <data>
 <template id="contact" inherit_id="base.contact" name="Forum Contact Widget">
     <xpath expr="//div[@itemprop='address']" position="after">
         <div>
              <div t-if="'karma' in fields" class='css_editable_mode_hidden'>
                 <div t-if="options.get('UserBio')">
-                    <span t-field="object.company_id.name" class="o_forum_tooltip_line"/><br/>
-                        <a t-att-href="object.company_id.website" t-if="object.company_id.website">
-                            <span t-field="object.company_id.website" class="o_forum_tooltip_line"/>
+                    <span t-field="object.company_name" class="o_forum_tooltip_line"/><br/>
+                        <a t-att-href="object.website" t-if="object.website">
+                            <span t-field="object.website" class="o_forum_tooltip_line"/>
                         </a>
                 </div>
                 <b><t t-esc="object.karma"/></b>
@@ -38,4 +38,4 @@
     </xpath>
 </template>
  </data>
-</openerp>
+</odoo>

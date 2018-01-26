@@ -3,14 +3,16 @@
 # * website_gengo
 # 
 # Translators:
+# 최재호 <hwangtog@gmail.com>, 2017
+# Martin Trigaux <mat@odoo.com>, 2017
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo 9.0\n"
+"Project-Id-Version: Odoo Server 10.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-07 14:41+0000\n"
-"PO-Revision-Date: 2015-09-08 10:28+0000\n"
-"Last-Translator: Martin Trigaux\n"
-"Language-Team: Korean (http://www.transifex.com/odoo/odoo-9/language/ko/)\n"
+"POT-Creation-Date: 2016-09-07 08:57+0000\n"
+"PO-Revision-Date: 2016-09-07 08:57+0000\n"
+"Last-Translator: Martin Trigaux <mat@odoo.com>, 2017\n"
+"Language-Team: Korean (https://www.transifex.com/odoo/teams/41243/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -164,7 +166,9 @@ msgid ""
 "In this mode, you can translate texts or post texts to Gengo for translation.\n"
 "                            To change the structure of the page, you must edit the\n"
 "                            master page."
-msgstr "이 모드에서는 번역을 위한 Gengo에 문자 또는 게시물 문구를 번역 할 수 있습니다.\n                            페이지 구조를 변경하려면, 마스터 페이지를 편집해야 합니다."
+msgstr ""
+"이 모드에서는 번역을 위한 Gengo에 문자 또는 게시물 문구를 번역 할 수 있습니다.\n"
+"                            페이지 구조를 변경하려면, 마스터 페이지를 편집해야 합니다."
 
 #. module: website_gengo
 #. openerp-web

@@ -3,14 +3,17 @@
 # * account_analytic_default
 # 
 # Translators:
+# Martin Trigaux <mat@odoo.com>, 2017
+# Otgonbayar.A <gobi.mn@gmail.com>, 2017
+# Uurdmunkh Orgikh <uurdmunkh.u@gmail.com>, 2017
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo 9.0\n"
+"Project-Id-Version: Odoo Server 10.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-07 14:40+0000\n"
-"PO-Revision-Date: 2015-09-07 15:43+0000\n"
-"Last-Translator: Martin Trigaux\n"
-"Language-Team: Mongolian (http://www.transifex.com/odoo/odoo-9/language/mn/)\n"
+"POT-Creation-Date: 2016-09-07 08:56+0000\n"
+"PO-Revision-Date: 2016-09-07 08:56+0000\n"
+"Last-Translator: Uurdmunkh Orgikh <uurdmunkh.u@gmail.com>, 2017\n"
+"Language-Team: Mongolian (https://www.transifex.com/odoo/teams/41243/mn/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -90,22 +93,12 @@ msgstr "Энэ Шинжилгээний дансны эхлэх огнооны �
 #. module: account_analytic_default
 #: model:ir.model.fields,field_description:account_analytic_default.field_account_analytic_default_display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Дэлгэцийн Нэр"
 
 #. module: account_analytic_default
 #: model:ir.model.fields,field_description:account_analytic_default.field_account_analytic_default_date_stop
 msgid "End Date"
 msgstr "Дуусах огноо"
-
-#. module: account_analytic_default
-#: model:ir.actions.act_window,name:account_analytic_default.act_account_acount_move_line_open
-msgid "Entries"
-msgstr "Гүйлгээ"
-
-#. module: account_analytic_default
-#: model:ir.model.fields,field_description:account_analytic_default.field_product_product_expense_policy
-msgid "Expense Invoice Policy"
-msgstr ""
 
 #. module: account_analytic_default
 #: model:ir.model.fields,help:account_analytic_default.field_account_analytic_default_sequence
@@ -124,14 +117,6 @@ msgid "ID"
 msgstr "ID"
 
 #. module: account_analytic_default
-#: model:ir.model.fields,help:account_analytic_default.field_product_product_expense_policy
-msgid ""
-"If you invoice at cost, the expense will be invoiced on the sale order at "
-"the cost of the analytic line;if you invoice at sales price, the price of "
-"the product will be used instead."
-msgstr ""
-
-#. module: account_analytic_default
 #: model:ir.model,name:account_analytic_default.model_account_invoice_line
 msgid "Invoice Line"
 msgstr "Нэхэмжлэлийн мөр"
@@ -139,7 +124,7 @@ msgstr "Нэхэмжлэлийн мөр"
 #. module: account_analytic_default
 #: model:ir.model.fields,field_description:account_analytic_default.field_account_analytic_default___last_update
 msgid "Last Modified on"
-msgstr ""
+msgstr "Сүүлийн засвар хийсэн огноо"
 
 #. module: account_analytic_default
 #: model:ir.model.fields,field_description:account_analytic_default.field_account_analytic_default_write_uid
@@ -180,7 +165,10 @@ msgid ""
 "Select a company which will use analytic account specified in analytic "
 "default (e.g. create new customer invoice or Sales order if we select this "
 "company, it will automatically take this as an analytic account)"
-msgstr "Шинжилгээний анхны утгад өгөгдсөн шинжилгээний дансыг хэрэглэх компанийг сонго (ө.х. шинэ захиалагчийн нэхэмжлэл үүсгээд эсвэл борлуулалтын захиалга үүсгээд энэ компанийг сонговол автоматаар энэ шинжилгээний дансыг авна)"
+msgstr ""
+"Шинжилгээний анхны утгад өгөгдсөн шинжилгээний дансыг хэрэглэх компанийг "
+"сонго (ө.х. шинэ захиалагчийн нэхэмжлэл үүсгээд эсвэл борлуулалтын захиалга "
+"үүсгээд энэ компанийг сонговол автоматаар энэ шинжилгээний дансыг авна)"
 
 #. module: account_analytic_default
 #: model:ir.model.fields,help:account_analytic_default.field_account_analytic_default_partner_id
@@ -188,7 +176,10 @@ msgid ""
 "Select a partner which will use analytic account specified in analytic "
 "default (e.g. create new customer invoice or Sales order if we select this "
 "partner, it will automatically take this as an analytic account)"
-msgstr "Шинжилгээний анхны утгад өгөгдсөн шинжилгээний дансыг хэрэглэх харилцагч сонго (ө.х. шинэ захиалагчийн нэхэмжлэл үүсгээд эсвэл борлуулалтын захиалга үүсгээд энэ харилцагчийг сонговол автоматаар энэн шинжилгээний дансыг авна)"
+msgstr ""
+"Шинжилгээний анхны утгад өгөгдсөн шинжилгээний дансыг хэрэглэх харилцагч "
+"сонго (ө.х. шинэ захиалагчийн нэхэмжлэл үүсгээд эсвэл борлуулалтын захиалга "
+"үүсгээд энэ харилцагчийг сонговол автоматаар энэн шинжилгээний дансыг авна)"
 
 #. module: account_analytic_default
 #: model:ir.model.fields,help:account_analytic_default.field_account_analytic_default_product_id
@@ -196,13 +187,18 @@ msgid ""
 "Select a product which will use analytic account specified in analytic "
 "default (e.g. create new customer invoice or Sales order if we select this "
 "product, it will automatically take this as an analytic account)"
-msgstr "Шинжилгээний анхны утгад өгөгдсөн шинжилгээний дансыг хэрэглэх барааг сонго (ө.х. шинэ захиалагчийн нэхэмжлэл үүсгээд эсвэл борлуулалтын захиалга үүсгээд хэрэв энэ барааг сонговол автоматаар энэ шинжилгээний дансыг авна)"
+msgstr ""
+"Шинжилгээний анхны утгад өгөгдсөн шинжилгээний дансыг хэрэглэх барааг сонго "
+"(ө.х. шинэ захиалагчийн нэхэмжлэл үүсгээд эсвэл борлуулалтын захиалга "
+"үүсгээд хэрэв энэ барааг сонговол автоматаар энэ шинжилгээний дансыг авна)"
 
 #. module: account_analytic_default
 #: model:ir.model.fields,help:account_analytic_default.field_account_analytic_default_user_id
 msgid ""
 "Select a user which will use analytic account specified in analytic default."
-msgstr "Шинжилгээний анхны утгад өгөгдсөн шинжилгээний дансыг хэрэглэх хэрэглэгчийг сонго."
+msgstr ""
+"Шинжилгээний анхны утгад өгөгдсөн шинжилгээний дансыг хэрэглэх хэрэглэгчийг "
+"сонго."
 
 #. module: account_analytic_default
 #: model:ir.model.fields,field_description:account_analytic_default.field_account_analytic_default_sequence
@@ -213,11 +209,6 @@ msgstr "Дараалал"
 #: model:ir.model.fields,field_description:account_analytic_default.field_account_analytic_default_date_start
 msgid "Start Date"
 msgstr "Эхлэл огноо"
-
-#. module: account_analytic_default
-#: model:ir.model,name:account_analytic_default.model_stock_picking
-msgid "Transfer"
-msgstr "Шилжүүлэх"
 
 #. module: account_analytic_default
 #: model:ir.model.fields,field_description:account_analytic_default.field_account_analytic_default_user_id

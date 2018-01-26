@@ -6,6 +6,8 @@ var ajax = require('web.ajax');
 var core = require('web.core');
 var time = require('web.time');
 var Widget = require('web.Widget');
+var local_storage = require('web.local_storage');
+var website = require('website.website');
 
 var _t = core._t;
 var page_widgets = {};
@@ -14,19 +16,20 @@ $(document).ready(function () {
 
     var widget_parent = $('body');
 
-
-    $("timeago.timeago").each(function (index, el) {
-        var datetime = $(el).attr('datetime'),
-            datetime_obj = time.str_to_datetime(datetime),
-            // if presentation 7 days, 24 hours, 60 min, 60 second, 1000 millis old(one week)
-            // then return fix formate string else timeago
-            display_str = "";
-        if (datetime_obj && new Date().getTime() - datetime_obj.getTime() > 7 * 24 * 60 * 60 * 1000) {
-            display_str = datetime_obj.toDateString();
-        } else {
-            display_str = $.timeago(datetime_obj);
-        }
-        $(el).text(display_str);
+    website.localeDef.then(function () {
+        $("timeago.timeago").each(function (index, el) {
+            var datetime = $(el).attr('datetime'),
+                datetime_obj = time.str_to_datetime(datetime),
+                // if presentation 7 days, 24 hours, 60 min, 60 second, 1000 millis old(one week)
+                // then return fix formate string else timeago
+                display_str = "";
+            if (datetime_obj && new Date().getTime() - datetime_obj.getTime() > 7 * 24 * 60 * 60 * 1000) {
+                display_str = moment(datetime_obj).format('ll');
+            } else {
+                display_str = moment(datetime_obj).fromNow();
+            }
+            $(el).text(display_str);
+        });
     });
 
     // To prevent showing channel settings alert box once user closed it.
@@ -55,10 +58,10 @@ $(document).ready(function () {
                 this.popover_alert(button, _.str.sprintf(_t('Please <a href="/web?redirect=%s">login</a> to vote this slide'), (document.URL)));
             }else{
                 var target = button.find('.fa');
-                if (localStorage['slide_vote_' + slide_id] !== user_id.toString()) {
+                if (local_storage.getItem('slide_vote_' + slide_id) !== user_id.toString()) {
                     ajax.jsonRpc(href, 'call', {slide_id: slide_id}).then(function (data) {
                         target.text(data);
-                        localStorage['slide_vote_' + slide_id] = user_id;
+                        local_storage.setItem('slide_vote_' + slide_id, user_id);
                     });
                 } else {
                     this.popover_alert(button, _t('You have already voted for this slide'));

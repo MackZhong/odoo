@@ -86,6 +86,7 @@ instance, here is a simple sequence of two activities defined in XML
     <record id="trans_a_b" model="workflow.transition">
         <field name="act_from" ref="activity_a"/>
         <field name="act_to" ref="activity_b"/>
+        <field name="signal">signal_goto_b</signal>
     </record>
 
 A worfklow is always defined with respect to a particular model (the model is
@@ -107,9 +108,10 @@ is of kind ``function``, which means that the action ``print_a()`` is a method
 call on the model ``test.workflow`` (the usual ``cr, uid, ids, context``
 arguments are passed for you).
 
-The transition between "a" and "b" does not specify any condition. This means
-that the workflow instance immediately goes from "a" to "b" after "a" has been
-processed, and thus also processes activity "b".
+The transition between "a" and "b" specify a signal but not any condition. This
+means the workflow instance will immediately transition from "a" to "b" when the
+signal ``signal_goto_b`` is recieved and thus processes activity "b"'s action
+``print_b()``.
 
 Activities
 ----------
@@ -158,13 +160,13 @@ Sending a signal from a subflow
 '''''''''''''''''''''''''''''''
 
 When a workflow is embedded in an activity (as a subflow) of a workflow, the
-sublow can send a signal from its own activities to the parent workflow by
+subflow can send a signal from its own activities to the parent workflow by
 giving a signal name in the attribute ``signal_send``. Odoo processes those
 activities by sending the value of ``signal_send`` prefixed by "subflow."  to
 the parent workflow instance.
 
 In other words, it is possible to react and get transitions in the parent
-workflow as activities are executed in the sublow.
+workflow as activities are executed in the subflow.
 
 Server actions
 ''''''''''''''

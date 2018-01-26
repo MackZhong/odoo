@@ -1,16 +1,12 @@
 <?xml version="1.0" ?>
-<openerp>
+<odoo>
     <data>
-
         <!-- Bundle (minimal) for embedded slide iframe -->
         <template id="website_slides.slide_embed_assets" name="Website slides embed assets">
-            <link rel='stylesheet' href='/web/static/lib/fontawesome/css/font-awesome.css'/>
-            <link rel='stylesheet' href='/web/static/lib/bootstrap/css/bootstrap.css'/>
+            <link type="text/less" rel='stylesheet' href='/web/static/src/less/import_bootstrap.less'/>
             <link type="text/less" href="/website_slides/static/src/less/website_slides.less" rel="stylesheet" t-ignore="true"/>
 
-            <script type="text/javascript" src="/web/static/lib/jquery/jquery.js"></script>
-            <t t-call="web.bootstrap"/>
-            <t t-call="website.pdf_js_lib"></t>
+            <t t-call="web.pdf_js_lib"></t>
             <script type="text/javascript" src="/website_slides/static/lib/pdfslidesviewer/PDFSlidesViewer.js"></script>
             <script type="text/javascript" src="/website_slides/static/src/js/slides_embed.js"></script>
         </template>
@@ -23,8 +19,10 @@
             <html>
                 <head t-if="not private">
                     <title><t t-esc="slide.name"/></title>
-                    <script type="text/javascript" src="/website_slides/static/lib/pdfslidesviewer/PDFSlidesViewer.js"></script>
-                    <t t-call-assets="website_slides.slide_embed_assets"/>
+                    <t t-call-assets="web.assets_common" t-js="false"/>
+                    <t t-call-assets="website_slides.slide_embed_assets" t-js="false"/>
+                    <t t-call-assets="web.assets_common" t-css="false"/>
+                    <t t-call-assets="website_slides.slide_embed_assets" t-css="false"/>
                 </head>
                 <body t-if="private" style="position: inherit;">
                     <title><t t-esc="slide.name"/></title>
@@ -61,7 +59,7 @@
                     <!--  PDF Viewer Body : contains the canvas, the loader, or the image-->
                     <div id="PDFSlideViewer" style="position:relative;"
                             t-attf-data-slideid="#{slide.id}"
-                            t-attf-data-slideurl="/slides/slide/#{slide.id}/pdf_content"
+                            t-attf-data-slideurl="/slides/slide/#{slug(slide)}/pdf_content"
                             t-attf-data-downloadable="#{slide.download_security}"
                             t-att-data-defaultpage="page">
                         <t t-if="is_embedded">
@@ -135,7 +133,7 @@
                                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center"></div>
                                 </div>
                                 <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 pull-right text-right">
-                                    <a t-if="slide.download_security and not is_embedded" target="_top" t-attf-href="/slides/slide/#{slide.id}/download" title="Download" id="download">
+                                    <a t-if="slide.download_security and not is_embedded" target="_top" t-attf-href="/slides/slide/#{slug(slide)}/download" title="Download" id="download">
                                         <i class="fa fa-download fa-2x"></i>
                                     </a>
                                     <span id="fullscreen" title="View fullscreen">
@@ -170,4 +168,4 @@
             </html>
         </template>
     </data>
-</openerp>
+</odoo>

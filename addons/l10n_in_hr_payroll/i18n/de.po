@@ -1,32 +1,38 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # * l10n_in_hr_payroll
-# 
+#
 # Translators:
+# Thorsten Vocks <thorsten.vocks@openbig.org>, 2016
+# Wolfgang Taferner, 2016
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo 9.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-09-21 09:27+0000\n"
-"PO-Revision-Date: 2015-09-24 19:41+0000\n"
-"Last-Translator: Martin Trigaux\n"
+"PO-Revision-Date: 2016-06-02 09:42+0000\n"
+"Last-Translator: Thorsten Vocks <thorsten.vocks@openbig.org>\n"
 "Language-Team: German (http://www.transifex.com/odoo/odoo-9/language/de/)\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Language: de\n"
+"#-#-#-#-#  de.po (Odoo 9.0)  #-#-#-#-#\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"#-#-#-#-#  de.po (Odoo 9.0)  #-#-#-#-#\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_payment_advice_report_nbr
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.view_payment_advice_tree
 msgid "# Payment Lines"
-msgstr ""
+msgstr "# Zahlungspositionen"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.view_payslip_tree
 msgid "# Payslip Lines"
-msgstr ""
+msgstr "# Abrechnungsposten"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_payslip_report_nbr
@@ -36,7 +42,7 @@ msgstr ""
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_payrolladvice
 msgid "<span>Dear Sir/Madam,</span>"
-msgstr ""
+msgstr "<span>Sehr geehrte Damen und Herren,</span>"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_hryearlysalary
@@ -46,7 +52,7 @@ msgstr ""
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_hryearlysalary
 msgid "<strong> Deductions:</strong>"
-msgstr ""
+msgstr "<strong> Abzüge:</strong>"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_payrolladvice
@@ -62,7 +68,7 @@ msgstr ""
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_hryearlysalary
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_payslipdetails
 msgid "<strong>Address</strong>"
-msgstr ""
+msgstr "<strong>Adresse</strong>"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_payslipdetails
@@ -72,7 +78,7 @@ msgstr ""
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_payslipdetails
 msgid "<strong>Bank Account</strong>"
-msgstr ""
+msgstr "<strong>Bankkonto</strong>"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_hryearlysalary
@@ -92,7 +98,7 @@ msgstr ""
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_hryearlysalary
 msgid "<strong>Department</strong>"
-msgstr ""
+msgstr "<strong>Abteilung</strong>"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_hryearlysalary
@@ -128,7 +134,7 @@ msgstr ""
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_payslipdetails
 msgid "<strong>Name</strong>"
-msgstr ""
+msgstr "<strong>Name</strong>"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_hryearlysalary
@@ -138,7 +144,7 @@ msgstr ""
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_payslipdetails
 msgid "<strong>Reference</strong>"
-msgstr ""
+msgstr "<strong>Referenz</strong>"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_payrolladvice
@@ -148,7 +154,7 @@ msgstr ""
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_hrsalarybymonth
 msgid "<strong>Total</strong>"
-msgstr ""
+msgstr "<strong>Gesamt</strong>"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_payrolladvice
@@ -362,7 +368,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_hr_salary_employee_month_create_uid
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_yearly_salary_detail_create_uid
 msgid "Created by"
-msgstr ""
+msgstr "Erstellt von"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_hr_payroll_advice_create_date
@@ -370,7 +376,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_hr_salary_employee_month_create_date
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_yearly_salary_detail_create_date
 msgid "Created on"
-msgstr ""
+msgstr "Angelegt am"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_hr_payroll_advice_date
@@ -407,7 +413,7 @@ msgstr "Dezember"
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.hr_contract_form_in_inherit
 msgid "Deduction"
-msgstr ""
+msgstr "Abzüge"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.model.fields,help:l10n_in_hr_payroll.field_hr_contract_medical_insurance
@@ -436,7 +442,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_report_l10n_in_hr_payroll_report_payslipdetails_display_name
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_yearly_salary_detail_display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Anzeigename"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.view_payslip_search
@@ -528,12 +534,14 @@ msgstr "Von"
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.view_payment_advice_search
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.view_payslip_search
 msgid "Group By"
-msgstr ""
+msgstr "Gruppiert nach..."
 
 #. module: l10n_in_hr_payroll
 #: model:ir.model.fields,help:l10n_in_hr_payroll.field_hr_contract_house_rent_allowance_metro_nonmetro
 msgid ""
-"HRA is an allowance given by the employer to the employee for taking care of his rental or accommodation expenses for metro city it is 50% and for non metro 40%. \n"
+"HRA is an allowance given by the employer to the employee for taking care of "
+"his rental or accommodation expenses for metro city it is 50% and for non "
+"metro 40%. \n"
 "HRA computed as percentage(%)"
 msgstr ""
 
@@ -564,7 +572,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_report_l10n_in_hr_payroll_report_payslipdetails_id
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_yearly_salary_detail_id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_hr_payroll_advice_line_ifsc
@@ -612,7 +620,7 @@ msgstr "Juni"
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_report_l10n_in_hr_payroll_report_payslipdetails___last_update
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_yearly_salary_detail___last_update
 msgid "Last Modified on"
-msgstr ""
+msgstr "Zuletzt geändert am"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_hr_payroll_advice_line_write_uid
@@ -620,7 +628,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_hr_salary_employee_month_write_uid
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_yearly_salary_detail_write_uid
 msgid "Last Updated by"
-msgstr ""
+msgstr "Zuletzt aktualisiert durch"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_hr_payroll_advice_line_write_date
@@ -628,7 +636,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_hr_salary_employee_month_write_date
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_yearly_salary_detail_write_date
 msgid "Last Updated on"
-msgstr ""
+msgstr "Zuletzt aktualisiert am"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.view_hr_bank_advice_form
@@ -858,7 +866,7 @@ msgstr ""
 #. module: l10n_in_hr_payroll
 #: model:ir.model.fields,field_description:l10n_in_hr_payroll.field_hr_payroll_advice_number
 msgid "Reference"
-msgstr "Kundennummer"
+msgstr "Referenz"
 
 #. module: l10n_in_hr_payroll
 #: selection:payslip.report,state:0
@@ -868,7 +876,7 @@ msgstr "Abgelehnt"
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.menu,name:l10n_in_hr_payroll.menu_l10n_in_hr_payroll_report
 msgid "Reports"
-msgstr ""
+msgstr "Berichte"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_payrolladvice
@@ -965,7 +973,7 @@ msgstr "Anrede"
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_hrsalarybymonth
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_hryearlysalary
 msgid "To"
-msgstr ""
+msgstr "Bis"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.hr_payslip_run_search_inherit
@@ -978,7 +986,7 @@ msgstr ""
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_hryearlysalary
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_payslipdetails
 msgid "Total"
-msgstr "Bruttobetrag"
+msgstr "Gesamtbetrag"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.view_payment_advice_tree
@@ -1032,7 +1040,7 @@ msgstr ""
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_payrolladvice
 msgid "Yours Sincerely"
-msgstr ""
+msgstr "Hochachtungsvoll"
 
 #. module: l10n_in_hr_payroll
 #: model:ir.ui.view,arch_db:l10n_in_hr_payroll.report_payrolladvice

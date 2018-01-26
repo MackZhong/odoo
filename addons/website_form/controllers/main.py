@@ -1,13 +1,20 @@
 # -*- coding: utf-8 -*-
-import base64
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import base64
 import json
+import pytz
+
+from datetime import datetime
 from psycopg2 import IntegrityError
-from openerp import http, SUPERUSER_ID
-from openerp.http import request
-from openerp.tools.translate import _
-from openerp.exceptions import ValidationError
-from openerp.addons.base.ir.ir_qweb import nl2br
+
+from odoo import http
+from odoo.http import request
+from odoo.tools import DEFAULT_SERVER_DATE_FORMAT, DEFAULT_SERVER_DATETIME_FORMAT
+from odoo.tools.translate import _
+from odoo.exceptions import ValidationError
+from odoo.addons.base.ir.ir_qweb.fields import nl2br
+
 
 class WebsiteForm(http.Controller):
 
@@ -15,13 +22,11 @@ class WebsiteForm(http.Controller):
     @http.route('/website_form/<string:model_name>', type='http', auth="public", methods=['POST'], website=True)
     def website_form(self, model_name, **kwargs):
         model_record = request.env['ir.model'].search([('model', '=', model_name), ('website_form_access', '=', True)])
-
         if not model_record:
             return json.dumps(False)
 
         try:
-            data = self.extract_data(model_record, ** kwargs)
-
+            data = self.extract_data(model_record, request.params)
         # If we encounter an issue while extracting data
         except ValidationError, e:
             # I couldn't find a cleaner way to pass data to an exception
@@ -32,7 +37,7 @@ class WebsiteForm(http.Controller):
             if id_record:
                 self.insert_attachment(model_record, id_record, data['attachments'])
 
-        # Some fields have additionnal SQL constraints that we can't check generically
+        # Some fields have additional SQL constraints that we can't check generically
         # Ex: crm.lead.probability which is a float between 0 and 1
         # TODO: How to get the name of the erroneous field ?
         except IntegrityError:
@@ -62,6 +67,17 @@ class WebsiteForm(http.Controller):
     def boolean(self, field_label, field_input):
         return bool(field_input)
 
+    def date(self, field_label, field_input):
+        lang = request.env['ir.qweb.field'].user_lang()
+        return datetime.strptime(field_input, lang.date_format).strftime(DEFAULT_SERVER_DATE_FORMAT)
+
+    def datetime(self, field_label, field_input):
+        lang = request.env['ir.qweb.field'].user_lang()
+        strftime_format = (u"%s %s" % (lang.date_format, lang.time_format))
+        user_tz = pytz.timezone(request.context.get('tz') or request.env.user.tz or 'UTC')
+        dt = user_tz.localize(datetime.strptime(field_input, strftime_format)).astimezone(pytz.utc)
+        return dt.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+
     def binary(self, field_label, field_input):
         return base64.b64encode(field_input.read())
 
@@ -75,7 +91,8 @@ class WebsiteForm(http.Controller):
         'char': identity,
         'text': identity,
         'html': identity,
-        'datetime': identity,
+        'date': date,
+        'datetime': datetime,
         'many2one': integer,
         'one2many': one2many,
         'many2many':many2many,
@@ -88,7 +105,7 @@ class WebsiteForm(http.Controller):
 
 
     # Extract all data sent by the form and sort its on several properties
-    def extract_data(self, model, **kwargs):
+    def extract_data(self, model, values):
 
         data = {
             'record': {},        # Values to create record
@@ -96,10 +113,11 @@ class WebsiteForm(http.Controller):
             'custom': '',        # Custom fields values
         }
 
-        authorized_fields = model.sudo().get_authorized_fields();
+        authorized_fields = model.sudo()._get_form_writable_fields()
         error_fields = []
 
-        for field_name, field_value in kwargs.items():
+
+        for field_name, field_value in values.items():
             # If the value of the field if a file
             if hasattr(field_value, 'filename'):
                 # Undo file upload field name indexing
@@ -123,7 +141,7 @@ class WebsiteForm(http.Controller):
 
             # If it's a custom field
             elif field_name != 'context':
-                data['custom'] += "%s : %s\n" % (field_name, field_value)
+                data['custom'] += "%s : %s\n" % (field_name.decode('utf-8'), field_value)
 
         # Add metadata if enabled
         environ = request.httprequest.headers.environ
@@ -152,19 +170,21 @@ class WebsiteForm(http.Controller):
         return data
 
     def insert_record(self, request, model, values, custom, meta=None):
-        record = request.env[model.model].sudo().create(values)
+        record = request.env[model.model].sudo().with_context(mail_create_nosubscribe=True).create(values)
 
         if custom or meta:
-            default_field_name = model.website_form_default_field_id.name
-            default_field_data = values.get(default_field_name, '')
+            default_field = model.website_form_default_field_id
+            default_field_data = values.get(default_field.name, '')
             custom_content = (default_field_data + "\n\n" if default_field_data else '') \
                            + (self._custom_label + custom + "\n\n" if custom else '') \
                            + (self._meta_label + meta if meta else '')
 
             # If there is a default field configured for this model, use it.
             # If there isn't, put the custom data in a message instead
-            if default_field_name:
-                record.update({default_field_name: custom_content})
+            if default_field.name:
+                if default_field.ttype == 'html' or model.model == 'mail.mail':
+                    custom_content = nl2br(custom_content)
+                record.update({default_field.name: custom_content})
             else:
                 values = {
                     'body': nl2br(custom_content),
@@ -181,7 +201,7 @@ class WebsiteForm(http.Controller):
     def insert_attachment(self, model, id_record, files):
         orphan_attachment_ids = []
         record = model.env[model.model].browse(id_record)
-        authorized_fields = model.sudo().get_authorized_fields()
+        authorized_fields = model.sudo()._get_form_writable_fields()
         for file in files:
             custom_field = file.field_name not in authorized_fields
             attachment_value = {
@@ -200,7 +220,7 @@ class WebsiteForm(http.Controller):
         # If some attachments didn't match a field on the model,
         # we create a mail.message to link them to the record
         if orphan_attachment_ids:
-            if model.name != 'mail.mail':
+            if model.model != 'mail.mail':
                 values = {
                     'body': _('<p>Attached files : </p>'),
                     'model': model.model,

@@ -61,7 +61,7 @@ var ScreenWidget = PosBaseWidget.extend({
         var self = this;
         if (self.pos.scan_product(code)) {
             if (self.barcode_product_screen) {
-                self.gui.show_screen(self.barcode_product_screen);
+                self.gui.show_screen(self.barcode_product_screen, null, null, true);
             }
         } else {
             this.barcode_error_action(code);
@@ -73,12 +73,21 @@ var ScreenWidget = PosBaseWidget.extend({
     // - if there's a user with a matching barcode, put it as the active 'cashier', go to cashier mode, and return true
     // - else : do nothing and return false. You probably want to extend this to show and appropriate error popup... 
     barcode_cashier_action: function(code){
+        var self = this;
         var users = this.pos.users;
         for(var i = 0, len = users.length; i < len; i++){
             if(users[i].barcode === code.code){
-                this.pos.set_cashier(users[i]);
-                this.chrome.widget.username.renderElement();
-                return true;
+                if (users[i].id !== this.pos.get_cashier().id && users[i].pos_security_pin) {
+                    return this.gui.ask_password(users[i].pos_security_pin).then(function(){
+                        self.pos.set_cashier(users[i]);
+                        self.chrome.widget.username.renderElement();
+                        return true;
+                    });
+                } else {
+                    this.pos.set_cashier(users[i]);
+                    this.chrome.widget.username.renderElement();
+                    return true;
+                }
             }
         }
         this.barcode_error_action(code);
@@ -131,6 +140,8 @@ var ScreenWidget = PosBaseWidget.extend({
         this.pos.barcode_reader.set_action_callback({
             'cashier': _.bind(self.barcode_cashier_action, self),
             'product': _.bind(self.barcode_product_action, self),
+            'weight': _.bind(self.barcode_product_action, self),
+            'price': _.bind(self.barcode_product_action, self),
             'client' : _.bind(self.barcode_client_action, self),
             'discount': _.bind(self.barcode_discount_action, self),
             'error'   : _.bind(self.barcode_error_action, self),
@@ -270,15 +281,16 @@ var ScaleScreenWidget = ScreenWidget.extend({
         });
 
         this.$('.next,.buy-product').click(function(){
-            self.order_product();
             self.gui.show_screen(self.next_screen);
+            // add product *after* switching screen to scroll properly
+            self.order_product();
         });
 
         queue.schedule(function(){
             return self.pos.proxy.scale_read().then(function(weight){
                 self.set_weight(weight.weight);
             });
-        },{duration:50, repeat: true});
+        },{duration:150, repeat: true});
 
     },
     get_product: function(){
@@ -294,6 +306,15 @@ var ScaleScreenWidget = ScreenWidget.extend({
     get_product_price: function(){
         var product = this.get_product();
         return (product ? product.price : 0) || 0;
+    },
+    get_product_uom: function(){
+        var product = this.get_product();
+
+        if(product){
+            return this.pos.units_by_id[product.uom_id[0]].name;
+        }else{
+            return '';
+        }
     },
     set_weight: function(weight){
         this.weight = weight;
@@ -313,7 +334,7 @@ var ScaleScreenWidget = ScreenWidget.extend({
         var unit = this.pos.units_by_id[unit_id[0]];
         var weight = round_pr(this.weight || 0, unit.rounding);
         var weightstr = weight.toFixed(Math.ceil(Math.log(1.0/unit.rounding) / Math.log(10) ));
-            weightstr += ' Kg';
+        weightstr += ' ' + unit.name;
         return weightstr;
     },
     get_computed_price_string: function(){
@@ -400,7 +421,21 @@ var ActionpadWidget = PosBaseWidget.extend({
         var self = this;
         this._super();
         this.$('.pay').click(function(){
-            self.gui.show_screen('payment');
+            var order = self.pos.get_order();
+            var has_valid_product_lot = _.every(order.orderlines.models, function(line){
+                return line.has_valid_product_lot();
+            });
+            if(!has_valid_product_lot){
+                self.gui.show_popup('confirm',{
+                    'title': _t('Empty Serial/Lot Number'),
+                    'body':  _t('One or more product(s) required serial/lot number.'),
+                    confirm: function(){
+                        self.gui.show_screen('payment');
+                    },
+                });
+            }else{
+                self.gui.show_screen('payment');
+            }
         });
         this.$('.set-customer').click(function(){
             self.gui.show_screen('clientlist');
@@ -437,6 +472,8 @@ var OrderWidget = PosBaseWidget.extend({
         this.pos.get_order().select_orderline(orderline);
         this.numpad_state.reset();
     },
+
+
     set_value: function(val) {
     	var order = this.pos.get_order();
     	if (order.get_selected_orderline()) {
@@ -493,6 +530,12 @@ var OrderWidget = PosBaseWidget.extend({
             el_node = el_node.childNodes[0];
             el_node.orderline = orderline;
             el_node.addEventListener('click',this.line_click_handler);
+        var el_lot_icon = el_node.querySelector('.line-lot-icon');
+        if(el_lot_icon){
+            el_lot_icon.addEventListener('click', (function() {
+                this.show_product_lot(orderline);
+            }.bind(this)));
+        }
 
         orderline.node = el_node;
         return el_node;
@@ -556,6 +599,11 @@ var OrderWidget = PosBaseWidget.extend({
 
         this.el.querySelector('.summary .total > .value').textContent = this.format_currency(total);
         this.el.querySelector('.summary .total .subentry .value').textContent = this.format_currency(taxes);
+    },
+    show_product_lot: function(orderline){
+        this.pos.get_order().select_orderline(orderline);
+        var order = this.pos.get_order();
+        order.display_lot_popup();
     },
 });
 
@@ -926,10 +974,15 @@ var ProductScreenWidget = ScreenWidget.extend({
        }
     },
 
-    show: function(){
+    show: function(reset){
         this._super();
-        this.product_categories_widget.reset_category();
-        this.numpad.state.reset();
+        if (reset) {
+            this.product_categories_widget.reset_category();
+            this.numpad.state.reset();
+        }
+        if (this.pos.config.iface_vkeyboard && this.chrome.widget.keyboard) {
+            this.chrome.widget.keyboard.connect($(this.el.querySelector('.searchbox input')));
+        }
     },
 
     close: function(){
@@ -966,7 +1019,6 @@ var ClientListScreenWidget = ScreenWidget.extend({
         this.renderElement();
         this.details_visible = false;
         this.old_client = this.pos.get_order().get_client();
-        this.new_client = this.old_client;
 
         this.$('.back').click(function(){
             self.gui.back();
@@ -1005,10 +1057,10 @@ var ClientListScreenWidget = ScreenWidget.extend({
         this.$('.searchbox input').on('keypress',function(event){
             clearTimeout(search_timeout);
 
-            var query = this.value;
+            var searchbox = this;
 
             search_timeout = setTimeout(function(){
-                self.perform_search(query,event.which === 13);
+                self.perform_search(searchbox.value, event.which === 13);
             },70);
         });
 
@@ -1016,11 +1068,17 @@ var ClientListScreenWidget = ScreenWidget.extend({
             self.clear_search();
         });
     },
+    hide: function () {
+        this._super();
+        this.new_client = null;
+    },
     barcode_client_action: function(code){
         if (this.editing_client) {
             this.$('.detail.barcode').val(code.code);
         } else if (this.pos.db.get_partner_by_barcode(code.code)) {
-            this.display_client_details('show',this.pos.db.get_partner_by_barcode(code.code));
+            var partner = this.pos.db.get_partner_by_barcode(code.code);
+            this.new_client = partner;
+            this.display_client_details('show', partner);
         }
     },
     perform_search: function(query, associate_result){
@@ -1058,7 +1116,7 @@ var ClientListScreenWidget = ScreenWidget.extend({
                 clientline = clientline.childNodes[1];
                 this.partner_cache.cache_node(partner.id,clientline);
             }
-            if( partners === this.new_client ){
+            if( partner === this.old_client ){
                 clientline.classList.add('highlight');
             }else{
                 clientline.classList.remove('highlight');
@@ -1067,8 +1125,21 @@ var ClientListScreenWidget = ScreenWidget.extend({
         }
     },
     save_changes: function(){
+        var self = this;
+        var order = this.pos.get_order();
         if( this.has_client_changed() ){
-            this.pos.get_order().set_client(this.new_client);
+            var default_fiscal_position_id = _.find(this.pos.fiscal_positions, function(fp) {
+                return fp.id === self.pos.config.default_fiscal_position_id[0];
+            });
+            if ( this.new_client && this.new_client.property_account_position_id ) {
+                order.fiscal_position = _.find(this.pos.fiscal_positions, function (fp) {
+                    return fp.id === self.new_client.property_account_position_id[0];
+                }) || default_fiscal_position_id;
+            } else {
+                order.fiscal_position = default_fiscal_position_id;
+            }
+
+            order.set_client(this.new_client);
         }
     },
     has_client_changed: function(){
@@ -1138,7 +1209,7 @@ var ClientListScreenWidget = ScreenWidget.extend({
         
         var fields = {};
         this.$('.client-details-contents .detail').each(function(idx,el){
-            fields[el.name] = el.value;
+            fields[el.name] = el.value || false;
         });
 
         if (!fields.name) {
@@ -1152,7 +1223,6 @@ var ClientListScreenWidget = ScreenWidget.extend({
 
         fields.id           = partner.id || false;
         fields.country_id   = fields.country_id || false;
-        fields.barcode      = fields.barcode || '';
 
         new Model('res.partner').call('create_from_ui',[fields]).then(function(partner_id){
             self.saved_client_details(partner_id);
@@ -1259,6 +1329,7 @@ var ClientListScreenWidget = ScreenWidget.extend({
     //             to maintain consistent scroll.
     display_client_details: function(visibility,partner,clickpos){
         var self = this;
+        var searchbox = this.$('.searchbox input');
         var contents = this.$('.client-details-contents');
         var parent   = this.$('.client-list').parent();
         var scroll   = parent.scrollTop();
@@ -1280,6 +1351,9 @@ var ClientListScreenWidget = ScreenWidget.extend({
             var new_height   = contents.height();
 
             if(!this.details_visible){
+                // resize client list to take into account client details
+                parent.height('-=' + new_height);
+
                 if(clickpos < scroll + new_height + 20 ){
                     parent.scrollTop( clickpos - 20 );
                 }else{
@@ -1292,12 +1366,35 @@ var ClientListScreenWidget = ScreenWidget.extend({
             this.details_visible = true;
             this.toggle_save_button();
         } else if (visibility === 'edit') {
+            // Connect the keyboard to the edited field
+            if (this.pos.config.iface_vkeyboard && this.chrome.widget.keyboard) {
+                contents.off('click', '.detail');
+                searchbox.off('click');
+                contents.on('click', '.detail', function(ev){
+                    self.chrome.widget.keyboard.connect(ev.target);
+                    self.chrome.widget.keyboard.show();
+                });
+                searchbox.on('click', function() {
+                    self.chrome.widget.keyboard.connect($(this));
+                });
+            }
+
             this.editing_client = true;
             contents.empty();
             contents.append($(QWeb.render('ClientDetailsEdit',{widget:this,partner:partner})));
             this.toggle_save_button();
 
-            contents.find('.image-uploader').on('change',function(){
+            // Browsers attempt to scroll invisible input elements
+            // into view (eg. when hidden behind keyboard). They don't
+            // seem to take into account that some elements are not
+            // scrollable.
+            contents.find('input').blur(function() {
+                setTimeout(function() {
+                    self.$('.window').scrollTop(0);
+                }, 0);
+            });
+
+            contents.find('.image-uploader').on('change',function(event){
                 self.load_image_file(event.target.files[0],function(res){
                     if (res) {
                         contents.find('.client-picture img, .client-picture .fa').remove();
@@ -1309,6 +1406,7 @@ var ClientListScreenWidget = ScreenWidget.extend({
             });
         } else if (visibility === 'hide') {
             contents.empty();
+            parent.height('100%');
             if( height > scroll ){
                 contents.css({height:height+'px'});
                 contents.animate({height:0},400,function(){
@@ -1323,6 +1421,9 @@ var ClientListScreenWidget = ScreenWidget.extend({
     },
     close: function(){
         this._super();
+        if (this.pos.config.iface_vkeyboard && this.chrome.widget.keyboard) {
+            this.chrome.widget.keyboard.hide();
+        }
     },
 });
 gui.define_screen({name:'clientlist', widget: ClientListScreenWidget});
@@ -1345,7 +1446,9 @@ var ReceiptScreenWidget = ScreenWidget.extend({
 
         this.render_change();
         this.render_receipt();
-
+        this.handle_auto_print();
+    },
+    handle_auto_print: function() {
         if (this.should_auto_print()) {
             this.print();
             if (this.should_close_immediately()){
@@ -1354,7 +1457,6 @@ var ReceiptScreenWidget = ScreenWidget.extend({
         } else {
             this.lock_screen(false);
         }
-
     },
     should_auto_print: function() {
         return this.pos.config.iface_print_auto && !this.pos.get_order()._printed;
@@ -1377,8 +1479,8 @@ var ReceiptScreenWidget = ScreenWidget.extend({
     print_xml: function() {
         var env = {
             widget:  this,
-            pos:     this.pos,
-            order:   this.pos.get_order(),
+            pos: this.pos,
+            order: this.pos.get_order(),
             receipt: this.pos.get_order().export_for_printing(),
             paymentlines: this.pos.get_order().get_paymentlines()
         };
@@ -1516,7 +1618,7 @@ var PaymentScreenWidget = ScreenWidget.extend({
                             event.keyCode === 110 ||  // Decimal point (numpad)
                             event.keyCode === 188 ||  // Comma
                             event.keyCode === 46 ) {  // Numpad dot
-                    key = '.';
+                    key = self.decimal_point;
                 } else if (event.keyCode >= 48 && event.keyCode <= 57) { // Numbers
                     key = '' + (event.keyCode - 48);
                 } else if (event.keyCode === 45) { // Minus
@@ -1566,11 +1668,16 @@ var PaymentScreenWidget = ScreenWidget.extend({
             this.inputbuffer = newbuf;
             var order = this.pos.get_order();
             if (order.selected_paymentline) {
-                var amount = formats.parse_value(this.inputbuffer, {type: "float"}, 0.0);
+                var amount = this.inputbuffer;
+
+                if (this.inputbuffer !== "-") {
+                    amount = formats.parse_value(this.inputbuffer, {type: "float"}, 0.0);
+                }
+
                 order.selected_paymentline.set_amount(amount);
                 this.order_changes();
                 this.render_paymentlines();
-                this.$('.paymentline.selected .edit').text(this.inputbuffer);
+                this.$('.paymentline.selected .edit').text(this.format_currency_no_symbol(amount));
             }
         }
     },
@@ -1696,9 +1803,9 @@ var PaymentScreenWidget = ScreenWidget.extend({
 
         this.gui.show_popup('number',{
             'title': tip ? _t('Change Tip') : _t('Add Tip'),
-            'value': value,
+            'value': self.format_currency_no_symbol(value),
             'confirm': function(value) {
-                order.set_tip(Number(value));
+                order.set_tip(formats.parse_value(value, {type: "float"}, 0));
                 self.order_changes();
                 self.render_paymentlines();
             }
@@ -1792,11 +1899,9 @@ var PaymentScreenWidget = ScreenWidget.extend({
             self.$('.next').removeClass('highlight');
         }
     },
-    // Check if the order is paid, then sends it to the backend,
-    // and complete the sale process
-    validate_order: function(force_validation) {
-        var self = this;
 
+    order_is_valid: function(force_validation) {
+        var self = this;
         var order = this.pos.get_order();
 
         // FIXME: this check is there because the backend is unable to
@@ -1806,22 +1911,22 @@ var PaymentScreenWidget = ScreenWidget.extend({
                 'title': _t('Empty Order'),
                 'body':  _t('There must be at least one product in your order before it can be validated'),
             });
-            return;
+            return false;
         }
 
         var plines = order.get_paymentlines();
         for (var i = 0; i < plines.length; i++) {
             if (plines[i].get_type() === 'bank' && plines[i].get_amount() < 0) {
-                this.pos_widget.screen_selector.show_popup('error',{
+                this.gui.show_popup('error',{
                     'message': _t('Negative Bank Payment'),
                     'comment': _t('You cannot have a negative amount in a Bank payment. Use a cash payment method to return money to the customer.'),
                 });
-                return;
+                return false;
             }
         }
 
         if (!order.is_paid() || this.invoicing) {
-            return;
+            return false;
         }
 
         // The exact amount must be paid if there is no cash payment method defined.
@@ -1835,12 +1940,12 @@ var PaymentScreenWidget = ScreenWidget.extend({
                     title: _t('Cannot return change without a cash payment method'),
                     body:  _t('There is no cash payment method available in this point of sale to handle the change.\n\n Please pay the exact amount or add a cash payment method in the point of sale configuration'),
                 });
-                return;
+                return false;
             }
         }
 
         // if the change is too large, it's probably an input error, make the user confirm.
-        if (!force_validation && (order.get_total_with_tax() * 1000 < order.get_total_paid())) {
+        if (!force_validation && order.get_total_with_tax() > 0 && (order.get_total_with_tax() * 1000 < order.get_total_paid())) {
             this.gui.show_popup('confirm',{
                 title: _t('Please Confirm Large Amount'),
                 body:  _t('Are you sure that the customer wants to  pay') + 
@@ -1856,13 +1961,23 @@ var PaymentScreenWidget = ScreenWidget.extend({
                     self.validate_order('confirm');
                 },
             });
-            return;
+            return false;
         }
+
+        return true;
+    },
+
+    finalize_validation: function() {
+        var self = this;
+        var order = this.pos.get_order();
 
         if (order.is_paid_with_cash() && this.pos.config.iface_cashdrawer) { 
 
                 this.pos.proxy.open_cashbox();
         }
+
+        order.initialize_validation_date();
+        order.finalized = true;
 
         if (order.is_to_invoice()) {
             var invoiced = this.pos.push_and_invoice_order(order);
@@ -1898,11 +2013,20 @@ var PaymentScreenWidget = ScreenWidget.extend({
 
             invoiced.done(function(){
                 self.invoicing = false;
-                order.finalize();
+                self.gui.show_screen('receipt');
             });
         } else {
             this.pos.push_order(order);
             this.gui.show_screen('receipt');
+        }
+
+    },
+
+    // Check if the order is paid, then sends it to the backend,
+    // and complete the sale process
+    validate_order: function(force_validation) {
+        if (this.order_is_valid(force_validation)) {
+            this.finalize_validation();
         }
     },
 });
@@ -1910,14 +2034,31 @@ gui.define_screen({name:'payment', widget: PaymentScreenWidget});
 
 var set_fiscal_position_button = ActionButtonWidget.extend({
     template: 'SetFiscalPositionButton',
+    init: function (parent, options) {
+        this._super(parent, options);
+
+        this.pos.get('orders').bind('add remove change', function () {
+            this.renderElement();
+        }, this);
+
+        this.pos.bind('change:selectedOrder', function () {
+            this.renderElement();
+        }, this);
+    },
     button_click: function () {
         var self = this;
-        var selection_list = _.map(self.pos.fiscal_positions, function (fiscal_position) {
+
+        var no_fiscal_position = [{
+            label: _t("None"),
+        }];
+        var fiscal_positions = _.map(self.pos.fiscal_positions, function (fiscal_position) {
             return {
                 label: fiscal_position.name,
                 item: fiscal_position
             };
         });
+
+        var selection_list = no_fiscal_position.concat(fiscal_positions);
         self.gui.show_popup('selection',{
             title: _t('Select tax'),
             list: selection_list,
@@ -1928,6 +2069,20 @@ var set_fiscal_position_button = ActionButtonWidget.extend({
             }
         });
     },
+    get_current_fiscal_position_name: function () {
+        var name = _t('Tax');
+        var order = this.pos.get_order();
+
+        if (order) {
+            var fiscal_position = order.fiscal_position;
+
+            if (fiscal_position) {
+                name = fiscal_position.display_name;
+            }
+        }
+
+        return name;
+    }
 });
 
 define_action_button({
@@ -1948,7 +2103,12 @@ return {
     NumpadWidget: NumpadWidget,
     ProductScreenWidget: ProductScreenWidget,
     ProductListWidget: ProductListWidget,
+    ClientListScreenWidget: ClientListScreenWidget,
+    ActionpadWidget: ActionpadWidget,
+    DomCache: DomCache,
+    ProductCategoriesWidget: ProductCategoriesWidget,
+    ScaleScreenWidget: ScaleScreenWidget,
+    set_fiscal_position_button: set_fiscal_position_button,
 };
 
 });
-

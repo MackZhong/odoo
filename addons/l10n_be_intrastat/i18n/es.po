@@ -1,20 +1,21 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # * l10n_be_intrastat
-# 
+#
 # Translators:
+# Luis Triana <luistriana.28@gmail.com>, 2015
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo 9.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-09-21 09:29+0000\n"
-"PO-Revision-Date: 2015-09-26 22:32+0000\n"
-"Last-Translator: Martin Trigaux\n"
+"PO-Revision-Date: 2015-11-11 16:08+0000\n"
+"Last-Translator: Luis Triana <luistriana.28@gmail.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/odoo/odoo-9/language/es/)\n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Language: es\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: l10n_be_intrastat
@@ -69,7 +70,7 @@ msgstr "Compañías"
 #. module: l10n_be_intrastat
 #: model:ir.model.fields,field_description:l10n_be_intrastat.field_l10n_be_intrastat_xml_xml_decl_company_id
 msgid "Company"
-msgstr ""
+msgstr "Compañía"
 
 #. module: l10n_be_intrastat
 #: model:ir.model.fields,field_description:l10n_be_intrastat.field_l10n_be_intrastat_region_country_id
@@ -130,7 +131,7 @@ msgstr "Envíos"
 #: model:ir.model.fields,field_description:l10n_be_intrastat.field_l10n_be_intrastat_transport_mode_display_name
 #: model:ir.model.fields,field_description:l10n_be_intrastat.field_l10n_be_intrastat_xml_xml_decl_display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Mostrar Nombre"
 
 #. module: l10n_be_intrastat
 #: selection:l10n_be_intrastat_xml.xml_decl,state:0
@@ -199,7 +200,9 @@ msgstr "Incoterm"
 msgid ""
 "International Commercial Terms are a series of predefined commercial terms "
 "used in international transactions."
-msgstr "Los términos de comercio internacional son una serie de condiciones comerciales usadas en las transacciones internacionales."
+msgstr ""
+"Los términos de comercio internacional son una serie de condiciones "
+"comerciales usadas en las transacciones internacionales."
 
 #. module: l10n_be_intrastat
 #: model:ir.ui.view,arch_db:l10n_be_intrastat.l10n_be_intrastat_xml_decl_product_category_view
@@ -297,7 +300,7 @@ msgstr "Factura"
 #. module: l10n_be_intrastat
 #: model:ir.model,name:l10n_be_intrastat.model_account_invoice_line
 msgid "Invoice Line"
-msgstr ""
+msgstr "Linea de Factura"
 
 #. module: l10n_be_intrastat
 #: selection:l10n_be_intrastat_xml.xml_decl,month:0
@@ -320,7 +323,7 @@ msgstr "Junio"
 #: model:ir.model.fields,field_description:l10n_be_intrastat.field_l10n_be_intrastat_transport_mode___last_update
 #: model:ir.model.fields,field_description:l10n_be_intrastat.field_l10n_be_intrastat_xml_xml_decl___last_update
 msgid "Last Modified on"
-msgstr ""
+msgstr "Última Modifiación en"
 
 #. module: l10n_be_intrastat
 #: model:ir.model.fields,field_description:l10n_be_intrastat.field_l10n_be_intrastat_region_write_uid
@@ -420,9 +423,11 @@ msgstr "Provincia"
 #: code:addons/l10n_be_intrastat/wizard/xml_decl.py:255
 #, python-format
 msgid ""
-"The Intrastat Region of the selected company is not set, please make sure to"
-" configure it first."
-msgstr "La región para el Intrastat de la compañía seleccionada no está establecida. Por favor asegúrese de configurarla primero"
+"The Intrastat Region of the selected company is not set, please make sure to "
+"configure it first."
+msgstr ""
+"La región para el Intrastat de la compañía seleccionada no está establecida. "
+"Por favor asegúrese de configurarla primero"
 
 #. module: l10n_be_intrastat
 #: code:addons/l10n_be_intrastat/wizard/xml_decl.py:84
@@ -430,7 +435,9 @@ msgstr "La región para el Intrastat de la compañía seleccionada no está esta
 msgid ""
 "The country of your company is not set, please make sure to configure it "
 "first."
-msgstr "El país de su compañía no está establecido. Por favor asegúrese de configurarlo primero."
+msgstr ""
+"El país de su compañía no está establecido. Por favor asegúrese de "
+"configurarlo primero."
 
 #. module: l10n_be_intrastat
 #: code:addons/l10n_be_intrastat/wizard/xml_decl.py:291
@@ -438,15 +445,19 @@ msgstr "El país de su compañía no está establecido. Por favor asegúrese de 
 msgid ""
 "The default Incoterm of your company is not set, please make sure to "
 "configure it first."
-msgstr "El Incoterm por defecto de su compañía no está establecido. Por favor asegúrese de configurarlo primero."
+msgstr ""
+"El Incoterm por defecto de su compañía no está establecido. Por favor "
+"asegúrese de configurarlo primero."
 
 #. module: l10n_be_intrastat
 #: code:addons/l10n_be_intrastat/wizard/xml_decl.py:279
 #, python-format
 msgid ""
-"The default Intrastat transport mode of your company is not set, please make"
-" sure to configure it first."
-msgstr "El modo de transporte Intrastat por defecto de su compañía no está establecido. Por favor asegúrese de configurarlo primero."
+"The default Intrastat transport mode of your company is not set, please make "
+"sure to configure it first."
+msgstr ""
+"El modo de transporte Intrastat por defecto de su compañía no está "
+"establecido. Por favor asegúrese de configurarlo primero."
 
 #. module: l10n_be_intrastat
 #: code:addons/l10n_be_intrastat/wizard/xml_decl.py:91
@@ -454,7 +465,9 @@ msgstr "El modo de transporte Intrastat por defecto de su compañía no está es
 msgid ""
 "The registry number of your company is not set, please make sure to "
 "configure it first."
-msgstr "El número de registro de su compañía no está establecido. Por favor asegúrese de configurarlo primero."
+msgstr ""
+"El número de registro de su compañía no está establecido. Por favor "
+"asegúrese de configurarlo primero."
 
 #. module: l10n_be_intrastat
 #: model:l10n_be_intrastat.region,name:l10n_be_intrastat.intrastat_region_2
@@ -485,14 +498,14 @@ msgstr "El año debe estar expresado con 4 dígitos (AAAA)"
 #. module: l10n_be_intrastat
 #: model:ir.model,name:l10n_be_intrastat.model_l10n_be_intrastat_region
 msgid "l10n_be_intrastat.region"
-msgstr ""
+msgstr "l10n_be_intrastat.region"
 
 #. module: l10n_be_intrastat
 #: model:ir.model,name:l10n_be_intrastat.model_l10n_be_intrastat_transaction
 msgid "l10n_be_intrastat.transaction"
-msgstr ""
+msgstr "l10n_be_intrastat.transaction"
 
 #. module: l10n_be_intrastat
 #: model:ir.model,name:l10n_be_intrastat.model_l10n_be_intrastat_transport_mode
 msgid "l10n_be_intrastat.transport_mode"
-msgstr ""
+msgstr "l10n_be_intrastat.transport_mode"

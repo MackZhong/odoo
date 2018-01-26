@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from openerp import models, fields, api
-import openerp.addons.decimal_precision as dp
+from odoo import models, fields, api
+import odoo.addons.decimal_precision as dp
 
 
 class PriceRule(models.Model):
@@ -29,6 +29,6 @@ class PriceRule(models.Model):
     operator = fields.Selection([('==', '='), ('<=', '<='), ('<', '<'), ('>=', '>='), ('>', '>')], 'Operator', required=True, default='<=')
     max_value = fields.Float('Maximum Value', required=True)
     variable_factor = fields.Selection([('weight', 'Weight'), ('volume', 'Volume'), ('wv', 'Weight * Volume'), ('price', 'Price'), ('quantity', 'Quantity')], 'Variable Factor', required=True, default='weight')
-    list_base_price = fields.Float(string='Sale Base Price', digits_compute=dp.get_precision('Product Price'), required=True, default=0.0)
-    list_price = fields.Float('Sale Price', digits_compute=dp.get_precision('Product Price'), required=True, default=0.0)
-    standard_price = fields.Float('Cost Price', digits_compute=dp.get_precision('Product Price'), required=True, default=0.0)
+    list_base_price = fields.Float(string='Sale Base Price', digits=dp.get_precision('Product Price'), required=True, default=0.0)
+    list_price = fields.Float('Sale Price', digits=dp.get_precision('Product Price'), required=True, default=0.0)
+    standard_price = fields.Float('Cost Price', digits=dp.get_precision('Product Price'), required=True, default=0.0)

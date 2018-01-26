@@ -3,9 +3,11 @@ odoo.define('website_links.charts', function (require) {
 
 var Widget = require('web.Widget');
 var base = require('web_editor.base');
+var core = require('web.core');
 var website = require('website.website');
 var Model = require('web.Model');
 
+var _t = core._t;
 var exports = {};
 
 if(!$('.o_website_links_chart').length) {
@@ -48,19 +50,17 @@ if(!$('.o_website_links_chart').length) {
 
             // Set title
             var nb_clicks = _.reduce(clicks_array, function(total, val) { return total + val[1] ; }, 0);
-            $(this.$element + ' .title').html(nb_clicks + ' clicks');
+            $(this.$element + ' .title').html(nb_clicks + _t(' clicks'));
 
             // Fit data into the NVD3 scheme
             var chart_data = [{}];
-                chart_data[0]['key'] = '# of clicks';
+                chart_data[0]['key'] = _t('# of clicks');
                 chart_data[0]['values'] = clicks_array;
 
             nv.addGraph(function() {
                 var chart = nv.models.lineChart()
                     .x(function(d) { return getDate(d); })
                     .y(function(d) { return getNbClicks(d); })
-                    .tooltips(true)
-                    .transitionDuration(0)
                     .showYAxis(true)
                     .showXAxis(true);
 
@@ -80,9 +80,7 @@ if(!$('.o_website_links_chart').length) {
                     .datum(chart_data)
                     .call(chart);
 
-                nv.utils.windowResize(chart.update);
-
-                return chart;
+                return self.chart = chart;
             });
         },
     });
@@ -98,26 +96,25 @@ if(!$('.o_website_links_chart').length) {
             // Process country data to fit into the NVD3 scheme
             var processed_data = [];
             for(var i = 0 ; i < this.data.length ; i++) {
-                var country_name = this.data[i]['country_id'] ? this.data[i]['country_id'][1] : 'Undefined';
+                var country_name = this.data[i]['country_id'] ? this.data[i]['country_id'][1] : _t('Undefined');
                 processed_data.push({'label':country_name + ' (' + this.data[i]['country_id_count'] + ')', 'value':this.data[i]['country_id_count']});
             }
 
             // Set title
-            $(this.$element + ' .title').html(this.data.length + ' countries');
+            $(this.$element + ' .title').html(this.data.length + _t(' countries'));
 
             nv.addGraph(function() {
                 var chart = nv.models.pieChart()
                     .x(function(d) { return d.label; })
                     .y(function(d) { return d.value; })
-                    .showLabels(true);
+                    .showLabels(false);
 
                 d3.select(self.$element + ' svg')
                     .datum(processed_data)
                     .transition().duration(1200)
                     .call(chart);
 
-                nv.utils.windowResize(chart.update);
-                return chart;
+                return self.chart = chart;
             });
         },
     });
@@ -125,10 +122,11 @@ if(!$('.o_website_links_chart').length) {
     base.ready().done(function() {
         // Resize the chart when a tab is opened, because NVD3 automatically reduce the size
         // of the chart to 5px width when the bootstrap tab is closed.
+        var charts = {};
         $(".graph-tabs li a").click(function (e) {
             e.preventDefault();
             $(this).tab('show');
-            $(window).trigger('resize'); // Force NVD3 to redraw the chart
+            _.chain(charts).pluck('chart').invoke('update'); // Force NVD3 to redraw the chart
         });
 
         // Get the code of the link
@@ -183,38 +181,40 @@ if(!$('.o_website_links_chart').length) {
                 // Process all time line chart data
                 var now = moment();
 
-                var all_time_chart = new BarChart('#all_time_clicks_chart', begin_date, now, formatted_clicks_by_day);
-                all_time_chart.start();
+                charts.all_time_bar = new BarChart('#all_time_clicks_chart', begin_date, now, formatted_clicks_by_day);
 
                 // Process month line chart data
                 begin_date = moment().subtract(30, 'days');
-                var month_chart = new BarChart('#last_month_clicks_chart', begin_date, now, formatted_clicks_by_day);
-                month_chart.start();
+                charts.last_month_bar = new BarChart('#last_month_clicks_chart', begin_date, now, formatted_clicks_by_day);
 
                 // Process week line chart data
                 begin_date = moment().subtract(7, 'days');
-                var week_chart = new BarChart('#last_week_clicks_chart', begin_date, now, formatted_clicks_by_day);
-                week_chart.start();
+                charts.last_week_bar = new BarChart('#last_week_clicks_chart', begin_date, now, formatted_clicks_by_day);
 
                 // Process pie charts
-                var all_time_pie_chart = new PieChart('#all_time_countries_charts', clicks_by_country);
-                all_time_pie_chart.start();
+                charts.all_time_pie = new PieChart('#all_time_countries_charts', clicks_by_country);
+                charts.last_month_pie = new PieChart('#last_month_countries_charts', last_month_clicks_by_country);
+                charts.last_week_pie = new PieChart('#last_week_countries_charts', last_week_clicks_by_country);
 
-                var last_month_pie_chart = new PieChart('#last_month_countries_charts', last_month_clicks_by_country);
-                last_month_pie_chart.start();
+                var row_width = $('#all_time_countries_charts').parent().width();
+                var charts_svg = $('#all_time_countries_charts,last_month_countries_charts,last_week_countries_charts').find('svg');
+                charts_svg.css('height', Math.max(clicks_by_country.length * (row_width > 750 ? 1 : 2), 20) + 'em');
 
-                var last_week_pie_chart = new PieChart('#last_week_countries_charts', last_week_clicks_by_country);
-                last_week_pie_chart.start();
+                _.invoke(charts, 'start');
+
+                nv.utils.windowResize(function () {
+                    _.chain(charts).pluck('chart').invoke('update');
+                });
             }
             else {
-                $('#all_time_charts').prepend('There is no data to show');
-                $('#last_month_charts').prepend('There is no data to show');
-                $('#last_week_charts').prepend('There is no data to show');
+                $('#all_time_charts').prepend(_t('There is no data to show'));
+                $('#last_month_charts').prepend(_t('There is no data to show'));
+                $('#last_week_charts').prepend(_t('There is no data to show'));
             }
         });
 
         // Copy to clipboard link
-        ZeroClipboard.config({swfPath: location.origin + "/web/static/lib/zeroclipboard/ZeroClipboard.swf" });
+        ZeroClipboard.config({swfPath: location.origin + "/website_links/static/lib/zeroclipboard/ZeroClipboard.swf" });
         new ZeroClipboard($('.copy-to-clipboard'));
 
         var animating_copy = false;

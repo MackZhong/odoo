@@ -1,17 +1,23 @@
 # -*- coding: utf-8 -*-
 
+from email.utils import formataddr
+
 from .common import TestMail
-from openerp.exceptions import AccessError
-from openerp.exceptions import except_orm
-from openerp.tools import mute_logger
+from odoo import api
+from odoo.exceptions import AccessError, except_orm
+from odoo.tools import mute_logger
 
 
 class TestMailGroup(TestMail):
 
-    def setUp(self):
-        super(TestMailGroup, self).setUp()
+    @classmethod
+    def setUpClass(cls):
+        super(TestMailGroup, cls).setUpClass()
+        # for specific tests of mail channel, get back to its expected behavior
+        cls.registry('mail.channel')._revert_method('message_get_recipient_values')
+
         # Private: private group
-        self.group_private = self.env['mail.channel'].with_context({
+        cls.group_private = cls.env['mail.channel'].with_context({
             'mail_create_nolog': True,
             'mail_create_nosubscribe': True
         }).create({
@@ -19,7 +25,16 @@ class TestMailGroup(TestMail):
             'public': 'private'}
         ).with_context({'mail_create_nosubscribe': False})
 
-    @mute_logger('openerp.addons.base.ir.ir_model', 'openerp.models')
+    @classmethod
+    def tearDownClass(cls):
+        # set master class behavior back
+        @api.multi
+        def mail_group_message_get_recipient_values(self, notif_message=None, recipient_ids=None):
+            return self.env['mail.thread'].message_get_recipient_values(notif_message=notif_message, recipient_ids=recipient_ids)
+        cls.env['mail.channel']._patch_method('message_get_recipient_values', mail_group_message_get_recipient_values)
+        super(TestMailGroup, cls).tearDownClass()
+
+    @mute_logger('odoo.addons.base.ir.ir_model', 'odoo.models')
     def test_access_rights_public(self):
         # Read public group -> ok
         self.group_public.sudo(self.user_public).read()
@@ -47,7 +62,7 @@ class TestMailGroup(TestMail):
         with self.assertRaises(AccessError):
             self.group_public.sudo(self.user_public).unlink()
 
-    @mute_logger('openerp.addons.base.ir.ir_model', 'openerp.models')
+    @mute_logger('odoo.addons.base.ir.ir_model', 'odoo.models')
     def test_access_rights_groups(self):
         # Employee read employee-based group: ok
         # TODO Change the except_orm to Warning
@@ -88,3 +103,30 @@ class TestMailGroup(TestMail):
             # TODO Change the except_orm to Warning
             with self.assertRaises(except_orm):
                 trigger_read = partner.name
+
+    def test_mail_group_notification_recipients_grouped(self):
+        # Data: set alias_domain to see emails with alias
+        self.env['ir.config_parameter'].set_param('mail.catchall.domain', 'schlouby.fr')
+        self.group_private.write({'alias_name': 'Test'})
+        self.group_private.message_subscribe_users([self.user_employee.id, self.user_portal.id])
+
+        self.group_private.message_post(body="Test", message_type='comment', subtype='mt_comment')
+        sent_emails = self._mails
+        self.assertEqual(len(sent_emails), 1)
+        for email in sent_emails:
+            self.assertEqual(
+                set(email['email_to']),
+                set([formataddr((self.user_employee.name, self.user_employee.email)), formataddr((self.user_portal.name, self.user_portal.email))]))
+
+    def test_mail_group_notification_recipients_separated(self):
+        # Remove alias, should trigger classic behavior of mail group
+        self.group_private.write({'alias_name': False})
+        self.group_private.message_subscribe_users([self.user_employee.id, self.user_portal.id])
+
+        self.group_private.message_post(body="Test", message_type='comment', subtype='mt_comment')
+        sent_emails = self._mails
+        self.assertEqual(len(sent_emails), 2)
+        for email in sent_emails:
+            self.assertIn(
+                email['email_to'][0],
+                [formataddr((self.user_employee.name, self.user_employee.email)), formataddr((self.user_portal.name, self.user_portal.email))])

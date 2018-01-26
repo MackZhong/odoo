@@ -1,31 +1,29 @@
 # -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from .common import TestMail
-from openerp.tools import mute_logger
+from odoo.addons.mail.tests.common import TestMail
+from odoo.tools import mute_logger
 
 
 class TestMailFeatures(TestMail):
     # TDE TODO: tests on the redirection controller
 
     def test_alias_setup(self):
-        Users = self.env['res.users'].with_context({'no_reset_password': True})
+        alias = self.env['mail.alias'].with_context(alias_model_name='mail.channel').create({'alias_name': 'b4r+_#_R3wl$$'})
+        self.assertEqual(alias.alias_name, 'b4r+_-_r3wl-', 'Disallowed chars should be replaced by hyphens')
 
-        user_valentin = Users.create({
-            'name': 'Valentin Cognito', 'email': 'valentin.cognito@gmail.com',
-            'login': 'valentin.cognito', 'alias_name': 'valentin.cognito'})
-        self.assertEqual(user_valentin.alias_name, user_valentin.login, "Login should be used as alias")
+    def test_10_cache_invalidation(self):
+        """ Test that creating a mail-thread record does not invalidate the whole cache. """
+        # make a new record in cache
+        record = self.env['res.partner'].new({'name': 'Brave New Partner'})
+        self.assertTrue(record.name)
 
-        user_pagan = Users.create({
-            'name': 'Pagan Le Marchant', 'email': 'plmarchant@gmail.com',
-            'login': 'plmarchant@gmail.com', 'alias_name': 'plmarchant@gmail.com'})
-        self.assertEqual(user_pagan.alias_name, 'plmarchant', "If login is an email, the alias should keep only the local part")
+        # creating a mail-thread record should not invalidate the whole cache
+        self.env['res.partner'].create({'name': 'Actual Partner'})
+        self.assertTrue(record.name)
 
-        user_barty = Users.create({
-            'name': 'Bartholomew Ironside', 'email': 'barty@gmail.com',
-            'login': 'b4r+_#_R3wl$$', 'alias_name': 'b4r+_#_R3wl$$'})
-        self.assertEqual(user_barty.alias_name, 'b4r+_-_r3wl-', 'Disallowed chars should be replaced by hyphens')
 
-    @mute_logger('openerp.addons.mail.models.mail_mail')
+    @mute_logger('odoo.addons.mail.models.mail_mail')
     def test_needaction(self):
         na_emp1_base = self.env['mail.message'].sudo(self.user_employee)._needaction_count(domain=[])
         na_emp2_base = self.env['mail.message'].sudo()._needaction_count(domain=[])
@@ -37,10 +35,75 @@ class TestMailFeatures(TestMail):
         self.assertEqual(na_emp1_new, na_emp1_base + 1)
         self.assertEqual(na_emp2_new, na_emp2_base)
 
+    @mute_logger('openerp.addons.mail.models.mail_mail')
+    def test_mark_all_as_read(self):
+        emp_partner = self.user_employee.partner_id.sudo(self.user_employee.id)
+
+        group_private = self.env['mail.channel'].with_context({
+            'mail_create_nolog': True,
+            'mail_create_nosubscribe': True,
+            'mail_channel_noautofollow': True,
+        }).create({
+            'name': 'Private',
+            'description': 'Private James R.',
+            'public': 'private',
+            'alias_name': 'private',
+            'alias_contact': 'followers'}
+        ).with_context({'mail_create_nosubscribe': False})
+
+        # mark all as read clear needactions
+        group_private.message_post(body='Test', message_type='comment', subtype='mail.mt_comment', partner_ids=[emp_partner.id])
+        emp_partner.env['mail.message'].mark_all_as_read(channel_ids=[], domain=[])
+        na_count = emp_partner.get_needaction_count()
+        self.assertEqual(na_count, 0, "mark all as read should conclude all needactions")
+
+        # mark all as read also clear inaccessible needactions
+        new_msg = group_private.message_post(body='Zest', message_type='comment', subtype='mail.mt_comment', partner_ids=[emp_partner.id])
+        needaction_accessible = len(emp_partner.env['mail.message'].search([['needaction', '=', True]]))
+        self.assertEqual(needaction_accessible, 1, "a new message to a partner is readable to that partner")
+
+        new_msg.sudo().partner_ids = self.env['res.partner']
+        emp_partner.env['mail.message'].search([['needaction', '=', True]])
+        needaction_length = len(emp_partner.env['mail.message'].search([['needaction', '=', True]]))
+        self.assertEqual(needaction_length, 1, "message should still be readable when notified")
+
+        na_count = emp_partner.get_needaction_count()
+        self.assertEqual(na_count, 1, "message not accessible is currently still counted")
+
+        emp_partner.env['mail.message'].mark_all_as_read(channel_ids=[], domain=[])
+        na_count = emp_partner.get_needaction_count()
+        self.assertEqual(na_count, 0, "mark all read should conclude all needactions even inacessible ones")
+
+    @mute_logger('openerp.addons.mail.models.mail_mail')
+    def test_mark_all_as_read_share(self):
+        portal_partner = self.user_portal.partner_id.sudo(self.user_portal.id)
+
+        # mark all as read clear needactions
+        self.group_pigs.message_post(body='Test', message_type='comment', subtype='mail.mt_comment', partner_ids=[portal_partner.id])
+        portal_partner.env['mail.message'].mark_all_as_read(channel_ids=[], domain=[])
+        na_count = portal_partner.get_needaction_count()
+        self.assertEqual(na_count, 0, "mark all as read should conclude all needactions")
+
+        # mark all as read also clear inaccessible needactions
+        new_msg = self.group_pigs.message_post(body='Zest', message_type='comment', subtype='mail.mt_comment', partner_ids=[portal_partner.id])
+        needaction_accessible = len(portal_partner.env['mail.message'].search([['needaction', '=', True]]))
+        self.assertEqual(needaction_accessible, 1, "a new message to a partner is readable to that partner")
+
+        new_msg.sudo().partner_ids = self.env['res.partner']
+        needaction_length = len(portal_partner.env['mail.message'].search([['needaction', '=', True]]))
+        self.assertEqual(needaction_length, 1, "message should still be readable when notified")
+
+        na_count = portal_partner.get_needaction_count()
+        self.assertEqual(na_count, 1, "message not accessible is currently still counted")
+
+        portal_partner.env['mail.message'].mark_all_as_read(channel_ids=[], domain=[])
+        na_count = portal_partner.get_needaction_count()
+        self.assertEqual(na_count, 0, "mark all read should conclude all needactions even inacessible ones")
+
 
 class TestMessagePost(TestMail):
 
-    @mute_logger('openerp.addons.mail.models.mail_mail')
+    @mute_logger('odoo.addons.mail.models.mail_mail')
     def test_post_no_subscribe_author(self):
         original = self.group_pigs.message_follower_ids
         self.group_pigs.sudo(self.user_employee).with_context({'mail_create_nosubscribe': True}).message_post(
@@ -50,7 +113,7 @@ class TestMessagePost(TestMail):
 
     # TODO : the author of a message post on mail.channel should not be added as follower
 
-    # @mute_logger('openerp.addons.mail.models.mail_mail')
+    # @mute_logger('odoo.addons.mail.models.mail_mail')
     # def test_post_subscribe_author(self):
     #     original = self.group_pigs.message_follower_ids
     #     self.group_pigs.sudo(self.user_employee).message_post(
@@ -58,7 +121,7 @@ class TestMessagePost(TestMail):
     #     self.assertEqual(self.group_pigs.message_follower_ids.mapped('partner_id'), original.mapped('partner_id') | self.user_employee.partner_id)
     #     self.assertEqual(self.group_pigs.message_follower_ids.mapped('channel_id'), original.mapped('channel_id'))
 
-    @mute_logger('openerp.addons.mail.models.mail_mail')
+    @mute_logger('odoo.addons.mail.models.mail_mail')
     def test_post_no_subscribe_recipients(self):
         original = self.group_pigs.message_follower_ids
         self.group_pigs.sudo(self.user_employee).with_context({'mail_create_nosubscribe': True}).message_post(
@@ -66,7 +129,7 @@ class TestMessagePost(TestMail):
         self.assertEqual(self.group_pigs.message_follower_ids.mapped('partner_id'), original.mapped('partner_id'))
         self.assertEqual(self.group_pigs.message_follower_ids.mapped('channel_id'), original.mapped('channel_id'))
 
-    @mute_logger('openerp.addons.mail.models.mail_mail')
+    @mute_logger('odoo.addons.mail.models.mail_mail')
     def test_post_subscribe_recipients(self):
         original = self.group_pigs.message_follower_ids
         self.group_pigs.sudo(self.user_employee).with_context({'mail_create_nosubscribe': True, 'mail_post_autofollow': True}).message_post(
@@ -74,7 +137,7 @@ class TestMessagePost(TestMail):
         self.assertEqual(self.group_pigs.message_follower_ids.mapped('partner_id'), original.mapped('partner_id') | self.partner_1 | self.partner_2)
         self.assertEqual(self.group_pigs.message_follower_ids.mapped('channel_id'), original.mapped('channel_id'))
 
-    @mute_logger('openerp.addons.mail.models.mail_mail')
+    @mute_logger('odoo.addons.mail.models.mail_mail')
     def test_post_subscribe_recipients_partial(self):
         original = self.group_pigs.message_follower_ids
         self.group_pigs.sudo(self.user_employee).with_context({'mail_create_nosubscribe': True, 'mail_post_autofollow': True, 'mail_post_autofollow_partner_ids': [self.partner_2.id]}).message_post(
@@ -82,7 +145,7 @@ class TestMessagePost(TestMail):
         self.assertEqual(self.group_pigs.message_follower_ids.mapped('partner_id'), original.mapped('partner_id') | self.partner_2)
         self.assertEqual(self.group_pigs.message_follower_ids.mapped('channel_id'), original.mapped('channel_id'))
 
-    @mute_logger('openerp.addons.mail.models.mail_mail')
+    @mute_logger('odoo.addons.mail.models.mail_mail')
     def test_post_notifications(self):
         _body, _body_alt = '<p>Test Body</p>', 'Test Body'
         _subject = 'Test Subject'
@@ -137,8 +200,8 @@ class TestMessagePost(TestMail):
 
         # notification emails: followers + recipients - notify_email=none (partner_2) - author (user_employee)
         self.assertEqual(set(m['email_from'] for m in self._mails),
-                         set(['%s <%s@%s>' % (self.user_employee.name, self.user_employee.alias_name, _domain)]),
-                         'message_post: notification email wrong email_from: should use alias of sender')
+                         set(['%s <%s>' % (self.user_employee.name, self.user_employee.email)]),
+                         'message_post: notification email wrong email_from: should use sender email')
         self.assertEqual(set(m['email_to'][0] for m in self._mails),
                          set(['%s <%s>' % (self.partner_1.name, self.partner_1.email),
                               '%s <%s>' % (self.env.user.name, self.env.user.email)]))
@@ -152,7 +215,7 @@ class TestMessagePost(TestMail):
         self.assertTrue(all(_body_alt in m['body'] for m in self._mails))
         self.assertFalse(any(m['references'] for m in self._mails))
 
-    @mute_logger('openerp.addons.mail.models.mail_mail')
+    @mute_logger('odoo.addons.mail.models.mail_mail')
     def test_post_answer(self):
         _body = '<p>Test Body</p>'
         _subject = 'Test Subject'
@@ -184,7 +247,7 @@ class TestMessagePost(TestMail):
         self.assertEqual(new_msg.parent_id.id, parent_msg.id, 'message_post: flatten error')
         self.assertFalse(new_msg.partner_ids)
 
-    @mute_logger('openerp.addons.mail.models.mail_mail')
+    @mute_logger('odoo.addons.mail.models.mail_mail')
     def test_message_compose(self):
         composer = self.env['mail.compose.message'].with_context({
             'default_composition_mode': 'comment',
@@ -215,7 +278,7 @@ class TestMessagePost(TestMail):
 
         # TODO: test attachments ?
 
-    @mute_logger('openerp.addons.mail.models.mail_mail')
+    @mute_logger('odoo.addons.mail.models.mail_mail')
     def test_message_compose_mass_mail(self):
         composer = self.env['mail.compose.message'].with_context({
             'default_composition_mode': 'mass_mail',
@@ -269,7 +332,7 @@ class TestMessagePost(TestMail):
         # self.assertEqual(set(group_bird.message_follower_ids.ids), set([self.partner_admin_id]),
         #                 'compose wizard: mail_post_autofollow and mail_create_nosubscribe context keys not correctly taken into account')
 
-    @mute_logger('openerp.addons.mail.models.mail_mail')
+    @mute_logger('odoo.addons.mail.models.mail_mail')
     def test_message_compose_mass_mail_active_domain(self):
         self.env['mail.compose.message'].with_context({
             'default_composition_mode': 'mass_mail',

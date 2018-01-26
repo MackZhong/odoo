@@ -1,25 +1,32 @@
 odoo.define('web.GraphWidget', function (require) {
 "use strict";
 
+var config = require('web.config');
 var core = require('web.core');
 var Model = require('web.DataModel');
+var formats = require('web.formats');
 var Widget = require('web.Widget');
 
 var _t = core._t;
 var QWeb = core.qweb;
 
+// hide top legend when too many item for device size
+var MAX_LEGEND_LENGTH = 25 * (1 + config.device.size_class);
+
 return Widget.extend({
+    className: "o_graph_svg_container",
     init: function (parent, model, options) {
         this._super(parent);
         this.context = options.context;
         this.fields = options.fields;
-        this.fields.__count__ = {string: _t("Quantity"), type: "integer"};
+        this.fields.__count__ = {string: _t("Count"), type: "integer"};
         this.model = new Model(model, {group_by_no_leaf: true});
 
         this.domain = options.domain || [];
         this.groupbys = options.groupbys || [];
         this.mode = options.mode || "bar";
         this.measure = options.measure || "__count__";
+        this.stacked = options.stacked;
     },
     start: function () {
         return this.load_data().then(this.proxy('display_graph'));
@@ -60,7 +67,8 @@ return Widget.extend({
             values = [];
             if (this.groupbys.length === 1) data_pt.value = [data_pt.value];
             for (j = 0; j < data_pt.value.length; j++) {
-                values[j] = this.sanitize_value(data_pt.value[j], data_pt.grouped_on[j]);
+                var field = _.isArray(data_pt.grouped_on) ? data_pt.grouped_on[j] : data_pt.grouped_on;
+                values[j] = this.sanitize_value(data_pt.value[j], field);
             }
             value = is_count ? data_pt.length : data_pt.aggregates[this.measure];
             this.data.push({
@@ -91,13 +99,17 @@ return Widget.extend({
                     "there is no active filter in the search bar."),
             }));
         } else {
-            this['display_' + this.mode]();
+            var chart = this['display_' + this.mode]();
+            if (chart && chart.tooltip.chartContainer) {
+                chart.tooltip.chartContainer(this.$el[0]);
+            }
         }
     },
     display_bar: function () {
         // prepare data for bar chart
         var data, values,
-            measure = this.fields[this.measure].string;
+            measure = this.fields[this.measure].string,
+            self = this;
 
         // zero groupbys
         if (this.groupbys.length === 0) {
@@ -157,22 +169,30 @@ return Widget.extend({
 
         var chart = nv.models.multiBarChart();
         chart.options({
+          margin: {left: 120, bottom: 60},
           delay: 250,
-          transitionDuration: 10,
-          showLegend: true,
+          transition: 10,
+          showLegend: _.size(data) <= MAX_LEGEND_LENGTH,
           showXAxis: true,
           showYAxis: true,
           rightAlignYAxis: false,
-          stacked: true,
+          stacked: this.stacked,
           reduceXTicks: false,
-          // rotateLabels: 40,
+          rotateLabels: -20,
           showControls: (this.groupbys.length > 1)
         });
-        chart.yAxis.tickFormat(function(d) { return openerp.web.format_value(d, { type : 'float' });});
+        chart.yAxis.tickFormat(function(d) {
+            return formats.format_value(d, {
+                type : 'float',
+                digits : self.fields[self.measure] && self.fields[self.measure].digits || [69, 2],
+            });
+        });
 
         chart(svg);
         this.to_remove = chart.update;
         nv.utils.onWindowResize(chart.update);
+
+        return chart;
     },
     display_pie: function () {
         var data = [],
@@ -186,18 +206,20 @@ return Widget.extend({
             all_zero = all_zero && (datapt.value === 0);
         });
         if (some_negative && !all_negative) {
-            return this.$el.append(QWeb.render('GraphView.error', {
+            this.$el.append(QWeb.render('GraphView.error', {
                 title: _t("Invalid data"),
                 description: _t("Pie chart cannot mix positive and negative numbers. " +
                     "Try to change your domain to only display positive results"),
             }));
+            return;
         }
         if (all_zero) {
-            return this.$el.append(QWeb.render('GraphView.error', {
+            this.$el.append(QWeb.render('GraphView.error', {
                 title: _t("Invalid data"),
                 description: _t("Pie chart cannot display all zero numbers.. " +
                     "Try to change your domain to display positive results"),
             }));
+            return;
         }
         if (this.groupbys.length) {
             data = this.data.map(function (datapt) {
@@ -209,16 +231,22 @@ return Widget.extend({
 
         svg.transition().duration(100);
 
+        var legend_right = config.device.size_class > config.device.SIZES.XS;
+
         var chart = nv.models.pieChart();
         chart.options({
           delay: 250,
-          transitionDuration: 100,
+          showLegend: legend_right || _.size(data) <= MAX_LEGEND_LENGTH,
+          legendPosition: legend_right ? 'right' : 'top',
+          transition: 100,
           color: d3.scale.category10().range(),
         });
 
         chart(svg);
         this.to_remove = chart.update;
         nv.utils.onWindowResize(chart.update);
+
+        return chart;
     },
     display_line: function () {
         if (this.data.length < 2) {
@@ -283,18 +311,26 @@ return Widget.extend({
 
         var chart = nv.models.lineChart();
         chart.options({
-          margin: {left: 50, right: 50},
+          margin: {left: 120, bottom: 60},
           useInteractiveGuideline: true,
-          showLegend: true,
+          showLegend: _.size(data) <= MAX_LEGEND_LENGTH,
           showXAxis: true,
           showYAxis: true,
         });
         chart.xAxis.tickValues(tickValues)
             .tickFormat(tickFormat);
+        chart.yAxis.tickFormat(function(d) {
+            return formats.format_value(d, {
+                type : 'float',
+                digits : self.fields[self.measure] && self.fields[self.measure].digits || [69, 2],
+            });
+        });
 
         chart(svg);
         this.to_remove = chart.update;
-        nv.utils.onWindowResize(chart.update);  
+        nv.utils.onWindowResize(chart.update);
+
+        return chart;
     },
     destroy: function () {
         nv.utils.offWindowResize(this.to_remove);

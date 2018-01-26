@@ -10,18 +10,18 @@ require('web_editor.base');  // wait for implicit dependencies to load
 
 var qweb = core.qweb;
 
-if(!$('#oe_systray').length) {
-    return $.Deferred().reject("DOM doesn't contain '#oe_systray'");
+if(!$('#oe_main_menu_navbar').length) {
+    return $.Deferred().reject("DOM doesn't contain #oe_main_menu_navbar");
 }
 
-var WebsitePlannerLauncher = Widget.extend(planner.PlannerHelpMixin, {
+var WebsitePlannerLauncher = Widget.extend({
     template: "PlannerLauncher",
-    start: function() {
+    start: function () {
         var self = this;
         var res = this._super.apply(this, arguments);
+        this.$('.progress').show();
         return res.then(this.get_website_planner.bind(this)).then(function(planner) {
-            self.$el.filter('.o_planner_systray').on('click', self, self.show_dialog.bind(self));
-            self.$el.filter('.o_planner_help').on('click', '.dropdown-menu li a[data-menu]', self.on_menu_help);
+            self.$el.on('click', self, self.show_dialog.bind(self));
             if (planner.length) {
                 self.planner = planner[0];
                 self.planner.data = $.parseJSON(planner[0].data) || {};
@@ -29,31 +29,31 @@ var WebsitePlannerLauncher = Widget.extend(planner.PlannerHelpMixin, {
             }
         });
     },
-    get_website_planner: function() {
+    get_website_planner: function () {
         return (new Model('web.planner')).call('search_read', [[['planner_application', '=', 'planner_website']]]);
     },
-    setup: function() {
+    setup: function () {
         var self = this;
         this.dialog = new planner.PlannerDialog(this, this.planner);
         this.dialog.appendTo($('<div>'));
         this.$(".progress").tooltip({html: true, title: this.planner.tooltip_planner, placement: 'bottom', container: 'body', delay: {'show': 700}});
-        this.dialog.on("planner_progress_changed", this, function(percent) {
+        this.dialog.on("planner_progress_changed", this, function (percent) {
             self.update_parent_progress_bar(percent);
         });
     },
-    update_parent_progress_bar: function(percent) {
+    update_parent_progress_bar: function (percent) {
         this.$(".progress-bar").css('width', percent+"%");
     },
-    show_dialog: function() {
+    show_dialog: function () {
         this.dialog.$el.appendTo(document.body);
         this.dialog.$el.modal('show');
     },
 });
 
 return ajax.loadXML('/web_planner/static/src/xml/web_planner.xml', qweb).then(function() {
-            var websitePlannerLauncher = new WebsitePlannerLauncher();
-            websitePlannerLauncher.prependTo($('#oe_systray'));
-        });
+    var websitePlannerLauncher = new WebsitePlannerLauncher();
+    websitePlannerLauncher.prependTo($('#oe_main_menu_navbar .o_menu_systray'));
+});
 
 });
 

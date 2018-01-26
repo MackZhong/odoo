@@ -1,5 +1,3 @@
-/*global openerp:false */
-
 odoo.define('account.reconciliation', function (require) {
 "use strict";
 
@@ -18,6 +16,7 @@ var pyeval = require('web.pyeval');
 var web_client = require('web.web_client');
 var parse_value = require('web.web_client');
 var Widget = require('web.Widget');
+var session = require('web.session');
 
 var FieldMany2One = core.form_widget_registry.get('many2one');
 var FieldChar = core.form_widget_registry.get('char');
@@ -26,9 +25,6 @@ var FieldFloat = core.form_widget_registry.get('float');
 var _t = core._t;
 var QWeb = core.qweb;
 var bus = core.bus;
-
-var _ = require('_');
-var $ = require('$');
 
 function defaultIfUndef(variable, defaultValue) {
     return variable === undefined ? defaultValue : variable;
@@ -79,7 +75,7 @@ var abstractReconciliation = Widget.extend(ControlPanelMixin, {
         this.formatCurrencies; // Method that formats the currency ; loaded from the server
         this.model_res_users = new Model("res.users");
         this.model_tax = new Model("account.tax");
-        this.model_presets = new Model("account.operation.template");
+        this.model_presets = new Model("account.reconcile.model");
         this.max_move_lines_displayed = 5;
         // Number of reconciliations loaded initially and by clicking 'show more'
         this.num_reconciliations_fetched_in_batch = 10;
@@ -90,6 +86,10 @@ var abstractReconciliation = Widget.extend(ControlPanelMixin, {
         // NB : for presets to work correctly, a field id must be the same string as a preset field
         this.presets = {};
         // Description of the fields to initialize in the "create new line" form
+        var domain_account_id = [['deprecated', '=', false]];
+        if (context && context.context && context.context.company_ids) {
+            domain_account_id.push(['company_id', 'in', context.context.company_ids]);
+        }
         this.create_form_fields = {
             account_id: {
                 id: "account_id",
@@ -102,7 +102,7 @@ var abstractReconciliation = Widget.extend(ControlPanelMixin, {
                     relation: "account.account",
                     string: _t("Account"),
                     type: "many2one",
-                    domain: [['deprecated', '=', false]],
+                    domain: domain_account_id,
                 },
             },
             label: {
@@ -128,7 +128,7 @@ var abstractReconciliation = Widget.extend(ControlPanelMixin, {
                     relation: "account.tax",
                     string: _t("Tax"),
                     type: "many2one",
-                    domain: [['type_tax_use','=','purchase']],
+                    domain: [['type_tax_use','!=','none']],
                 },
             },
             amount: {
@@ -155,7 +155,6 @@ var abstractReconciliation = Widget.extend(ControlPanelMixin, {
                     relation: "account.analytic.account",
                     string: _t("Analytic Acc."),
                     type: "many2one",
-                    domain: [['type', '!=', 'view'], ['state', 'not in', ['close','cancelled']]],
                 },
             },
         };
@@ -281,7 +280,7 @@ var abstractReconciliation = Widget.extend(ControlPanelMixin, {
     presetConfigCreateClickHandler: function(e) {
         e.preventDefault();
         var self = this;
-        return self.rpc("/web/action/load", {action_id: "account.action_account_operation_template"}).then(function(result) {
+        return self.rpc("/web/action/load", {action_id: "account.action_account_reconcile_model"}).then(function(result) {
             result.views = [[false, "form"], [false, "list"]];
             return self.do_action(result);
         });
@@ -290,7 +289,7 @@ var abstractReconciliation = Widget.extend(ControlPanelMixin, {
     presetConfigEditClickHandler: function(e) {
         e.preventDefault();
         var self = this;
-        return self.rpc("/web/action/load", {action_id: "account.action_account_operation_template"}).then(function(result) {
+        return self.rpc("/web/action/load", {action_id: "account.action_account_reconcile_model"}).then(function(result) {
             result.views = [[false, "list"], [false, "form"]];
             return self.do_action(result);
         });
@@ -343,7 +342,7 @@ var abstractReconciliation = Widget.extend(ControlPanelMixin, {
     keyboardShortcutsHandler: function(e) {
         var self = this;
         if ((e.which === 13 || e.which === 10) && (e.ctrlKey || e.metaKey)) {
-            self.processReconciliations(_.filter(self.getChildren(), function(o) { return o.get("balance").toFixed(3) === "0.000"; }));
+            self.processReconciliations(_.filter(self.getChildren(), function(o) { return self.monetaryIsZero(o.get("balance")); }));
         }
     },
 
@@ -369,6 +368,11 @@ var abstractReconciliation = Widget.extend(ControlPanelMixin, {
         if (line.ref && line.ref !== line.name)
             line.q_label = line.q_label + " : " + line.ref;
     },
+
+    // Method that tests if a monetary amount == 0, we use 4 digits because no currency uses more
+    monetaryIsZero: function(amount, digits) {
+        return utils.float_is_zero(amount, digits === undefined ? 4 : digits);
+    },
 });
 
 var abstractReconciliationLine = Widget.extend({
@@ -393,6 +397,7 @@ var abstractReconciliationLine = Widget.extend({
 
         this.decorateMoveLine = this.getParent().decorateMoveLine;
         this.formatCurrencies = this.getParent().formatCurrencies;
+        this.monetaryIsZero = this.getParent().monetaryIsZero;
         this.renderPresetsButtons = this.getParent().renderPresetsButtons;
 
         if (context.initial_data_provided === true && (context.reconciliation_proposition === undefined || context.line === undefined))
@@ -448,6 +453,8 @@ var abstractReconciliationLine = Widget.extend({
 
     start: function() {
         var self = this;
+        // fail silently if reconciliation widget is removed (eg. mode is changed)
+        var parent = this.getParent();
         return self._super().then(function() {
 
             // no animation while loading
@@ -463,8 +470,8 @@ var abstractReconciliationLine = Widget.extend({
                 return $.when(self.render()).then(function(){
                     self.is_consistent = true;
                     // Make an entrance
-                    self.animation_speed = self.getParent().animation_speed;
-                    self.aestetic_animation_speed = self.getParent().aestetic_animation_speed;
+                    self.animation_speed = parent.animation_speed;
+                    self.aestetic_animation_speed = parent.aestetic_animation_speed;
                     if (self.context.animate_entrance) {
                         return self.$el.stop(true, true).fadeIn({ duration: self.aestetic_animation_speed, queue: false }).css('display', 'none').slideDown(self.aestetic_animation_speed);
                     }
@@ -490,21 +497,20 @@ var abstractReconciliationLine = Widget.extend({
         // field_manager
         var dataset = new data.DataSet(this, "account.account", self.context);
         dataset.ids = [];
-        dataset.arch = {
+        var fields_view = {};
+        fields_view.arch = {
             attrs: { string: "Stéphanie de Monaco", version: "7.0", class: "oe_form_container o_form_container" },
             children: [],
             tag: "form"
         };
-
         self.field_manager = new FormView (
-            this, dataset, false, {
+            this, dataset, fields_view, {
                 initial_mode: 'edit',
                 disable_autofocus: false,
                 $buttons: $(),
                 $pager: $()
         });
-
-        self.field_manager.load_form(dataset);
+        self.field_manager.appendTo(document.createDocumentFragment()); // starts the FormView
 
         // fields default properties
         var Default_field = function() {
@@ -757,7 +763,9 @@ var abstractReconciliationLine = Widget.extend({
             else if (preset_line.amount_type === "percentage") {
                 self.amount_field.set_value(0);
                 self.updateBalance();
-                self.amount_field.set_value(-1 * self.get("balance") * preset_line.amount / 100);
+                var currency_dict = session.get_currency(self.get("currency_id"));
+                var preset_amount = utils.round_currency(currency_dict, -1 * self.get("balance") * preset_line.amount / 100);
+                self.amount_field.set_value(preset_amount);
             }
         }
     },
@@ -791,7 +799,7 @@ var abstractReconciliationLine = Widget.extend({
         _(self.getCreatedLines()).each(function(line){
             line.amount_str = self.formatCurrencies(Math.abs(line.amount), self.get("currency_id"));
             // Hack to show debit/credit 0 (can make sense for tax lines)
-            if (previous_line !== undefined && line.amount.toFixed(3) === "0.000" && previous_line.id === line.id)
+            if (previous_line !== undefined && self.monetaryIsZero(line.amount) && previous_line.id === line.id)
                 line.amount = 0.000001 * (previous_line.amount < 0 ? -1 : 1);
             var $line = $(QWeb.render(template_name, {line: line}));
             self.$(".tbody_created_lines").append($line);
@@ -973,7 +981,6 @@ var abstractReconciliationLine = Widget.extend({
         else
             self.set("mv_lines", []);
     },
-
     updateMatchesGetMvLines: function(excluded_ids, offset, limit, callback) {},
 
     // Generic function for updating the line_created_being_edited
@@ -993,7 +1000,7 @@ var abstractReconciliationLine = Widget.extend({
             var tax_id = self.tax_id_field.get("value");
             if (amount && tax_id) {
                 deferred_tax = self.model_tax
-                    .call("compute_all", [[tax_id], amount, self.get("currency_id")])
+                    .call("json_friendly_compute_all", [[tax_id], amount, self.get("currency_id")])
                     .then(function(data){
                         line_created_being_edited.length = 1; // remove tax lines
                         line_created_being_edited[0].amount_before_tax = amount;
@@ -1062,7 +1069,7 @@ var abstractReconciliationLine = Widget.extend({
             var amount = line.tax_id ? line.amount_before_tax: line.amount;
             dict['credit'] = (amount > 0 ? amount : 0);
             dict['debit'] = (amount < 0 ? -1 * amount : 0);
-            if (line.tax_id) dict['tax_ids'] = [line.tax_id];
+            if (line.tax_id) dict['tax_ids'] = [[4, line.tax_id, null]];
             if (line.analytic_account_id) dict['analytic_account_id'] = line.analytic_account_id;
             return dict;
         });
@@ -1125,6 +1132,7 @@ var bankStatementReconciliation = abstractReconciliation.extend({
         this.reconciliation_menu_id = false; // Used to update the needaction badge
         // The same move line cannot be selected for multiple reconciliations
         this.excluded_move_lines_ids = {};
+        this.widget_childrens = [];
     },
 
     serverPreprocessResultHandler: function(data) {
@@ -1176,42 +1184,62 @@ var bankStatementReconciliation = abstractReconciliation.extend({
                     single_statement: self.single_statement,
                     total_lines: self.num_already_reconciled_lines+self.lines.length
                 }));
-                self.updateProgressbar();
-                var reconciliations_to_show = self.lines.slice(0, self.num_reconciliations_fetched_in_batch);
-                self.last_displayed_reconciliation_index = reconciliations_to_show.length;
-                self.$(".reconciliation_lines_container").css("opacity", 0);
-
-                // If everything is reconciled, show end message
-                if (self.lines.length === 0) {
-                    if (self.notifications)
-                        self.displayNotifications(self.notifications, 0);
-                    self.displayDoneMessage(true);
-                    return;
-                }
-
-                // Display the reconciliations
-                return self.model_bank_statement_line
-                    .call("get_data_for_reconciliation_widget", [reconciliations_to_show])
-                    .then(function (data) {
-                        var child_promises = [];
-                        var datum = data.shift();
-                        if (datum !== undefined)
-                            child_promises.push(self.displayReconciliation(datum.st_line.id, 'match', false, true, datum.st_line, datum.reconciliation_proposition));
-                        while ((datum = data.shift()) !== undefined)
-                            child_promises.push(self.displayReconciliation(datum.st_line.id, 'inactive', false, true, datum.st_line, datum.reconciliation_proposition));
-
-                        // When reconciliations are instanciated, make an entrance
-                        $.when.apply($, child_promises).then(function(){
-                            self.$(".reconciliation_lines_container").animate({opacity: 1}, self.aestetic_animation_speed, function() {
-                                if (self.notifications) {
-                                    self.displayNotifications(self.notifications);
-                                    self.updateShowMoreButton();
-                                }
+                self.$el.find('.js_automatic_reconciliation').click(function() {
+                    // Let odoo try to reconcile entries for the user
+                    self.model_bank_statement_line
+                        .call("reconciliation_widget_auto_reconcile", [self.lines || undefined, self.num_already_reconciled_lines])
+                        .then(function(data){ self.serverPreprocessResultHandler(data); })
+                        .then(function(){  self.$('.js_automatic_reconciliation').hide();
+                            return self.display_reconciliation_propositions();
                             });
-                        });
-                    });
+
+                });
+                return self.display_reconciliation_propositions();
             });
         });
+    },
+
+    display_reconciliation_propositions: function() {
+        var self = this;
+        self.updateProgressbar();
+        var reconciliations_to_show = self.lines.slice(0, self.num_reconciliations_fetched_in_batch);
+        self.last_displayed_reconciliation_index = reconciliations_to_show.length;
+        self.$(".reconciliation_lines_container").css("opacity", 0);
+        // Delete previous bankStatementReconciliationLine
+        $.each(self.widget_childrens, function(index, child) {
+            child.destroy();
+        });
+
+        // If everything is reconciled, show end message
+        if (self.lines.length === 0) {
+            self.$(".reconciliation_lines_container").hide();
+            if (self.notifications)
+                self.displayNotifications(self.notifications, 0);
+            self.displayDoneMessage(true);
+            return;
+        }
+
+        // Display the reconciliations
+        return self.model_bank_statement_line
+            .call("get_data_for_reconciliation_widget", [reconciliations_to_show])
+            .then(function (data) {
+                var child_promises = [];
+                var datum = data.shift();
+                if (datum !== undefined)
+                    child_promises.push(self.displayReconciliation(datum.st_line.id, 'match', false, true, datum.st_line, datum.reconciliation_proposition));
+                while ((datum = data.shift()) !== undefined)
+                    child_promises.push(self.displayReconciliation(datum.st_line.id, 'inactive', false, true, datum.st_line, datum.reconciliation_proposition));
+
+                // When reconciliations are instanciated, make an entrance
+                $.when.apply($, child_promises).then(function(){
+                    self.$(".reconciliation_lines_container").animate({opacity: 1}, self.aestetic_animation_speed, function() {
+                        if (self.notifications) {
+                            self.displayNotifications(self.notifications);
+                            self.updateShowMoreButton();
+                        }
+                    });
+                });
+            });
     },
 
     statementNameClickHandler: function() {
@@ -1318,6 +1346,7 @@ var bankStatementReconciliation = abstractReconciliation.extend({
             reconciliation_proposition: initial_data_provided ? reconciliation_proposition : undefined,
         };
         var widget = new self.children_widget(self, context);
+        this.widget_childrens.push(widget);
         return widget.appendTo(self.$(".reconciliation_lines_container"));
     },
 
@@ -1519,7 +1548,7 @@ var bankStatementReconciliation = abstractReconciliation.extend({
         }
 
         // Render it
-        self.$(".protip").hide();
+        self.$(".o_protip").hide();
         self.updateShowMoreButton();
         self.$(".oe_form_sheet, o_form_sheet").append(QWeb.render("bank_statement_reconciliation_done_message", {
             title: title,
@@ -1553,7 +1582,7 @@ var bankStatementReconciliation = abstractReconciliation.extend({
                 .filter([['id', 'in', self.statement_ids]])
                 .all()
                 .then(function(data){
-                    if (_.all(data, function(o) { return o.balance_end_real === o.balance_end })) {
+                    if (_.all(data, function(o) { return self.monetaryIsZero(o.balance_end_real - o.balance_end) })) {
                         self.$(".button_close_statement").show();
                         self.$(".button_close_statement").click(function() {
                             self.$(".button_close_statement").attr("disabled", "disabled");
@@ -1605,6 +1634,7 @@ var bankStatementReconciliationLine = abstractReconciliationLine.extend({
         this.line_id = context.line_id;
         this.model_bank_statement_line = this.getParent().model_bank_statement_line;
         this.formatCurrencies = this.getParent().formatCurrencies;
+        this.monetaryIsZero = this.getParent().monetaryIsZero;
 
         if (context.initial_data_provided) {
             // Process data
@@ -1767,8 +1797,8 @@ var bankStatementReconciliationLine = abstractReconciliationLine.extend({
     /** Creating */
 
     initializeCreateForm: function() {
-        this.label_field.set("value", this.st_line.name);
         this._super();
+        this.label_field.set("value", this.st_line.name);
     },
 
 
@@ -1850,7 +1880,11 @@ var bankStatementReconciliationLine = abstractReconciliationLine.extend({
 
         // Find out if the counterpart is lower than, equal or greater than the transaction being reconciled
         var balance_type = undefined;
-        if (Math.abs(self.get("balance")).toFixed(3) === "0.000") balance_type = "equal";
+        var digits = 4;
+        if (this.get("currency_id") && session.get_currency(this.get("currency_id"))) {
+            digits = session.get_currency(this.get("currency_id")).digits[1];
+        }
+        if (self.monetaryIsZero(self.get("balance"), digits)) balance_type = "equal";
         else if (self.get("balance") * self.st_line.amount > 0) balance_type = "greater";
         else if (self.get("balance") * self.st_line.amount < 0) balance_type = "lower";
 
@@ -1874,6 +1908,7 @@ var bankStatementReconciliationLine = abstractReconciliationLine.extend({
             var propose_partial = self.getCreatedLines().length === 0
                 && balance_type === "greater"
                 && Math.abs(self.get("balance")) < Math.abs(last_line.debit - last_line.credit)
+                && self.get("balance") * (last_line.debit - last_line.credit) < 0
                 && ! last_line.partial_reconcile
                 && ! last_line.already_paid;
             last_line.propose_partial_reconcile = propose_partial;
@@ -2044,7 +2079,11 @@ var bankStatementReconciliationLine = abstractReconciliationLine.extend({
         var payment_aml = _.filter(this.get("mv_lines_selected"), function(line) { return line.already_paid });
         var payment_aml_ids = _.collect(payment_aml, function(line) { return line.id });
         var new_aml_dicts = this.prepareCreatedMoveLinesForPersisting(this.getCreatedLines());
-        if (Math.abs(this.get("balance")).toFixed(4) !== "0.0000") new_aml_dicts.push(this.prepareOpenBalanceForPersisting());
+        var digits = 4;
+        if (this.get("currency_id") && session.get_currency(this.get("currency_id"))) {
+            digits = session.get_currency(this.get("currency_id")).digits[1];
+        }
+        if (! self.monetaryIsZero(this.get("balance"), digits)) new_aml_dicts.push(this.prepareOpenBalanceForPersisting());
         return {
             'counterpart_aml_dicts': counterpart_aml_dicts,
             'payment_aml_ids': payment_aml_ids,
@@ -2258,13 +2297,19 @@ var manualReconciliation = abstractReconciliation.extend({
         animate_entrance = defaultIfUndef(animate_entrance, true);
         var self = this;
         var displayed_collections = self.getDisplayedCollections();
+        var plural = { 'customer': 'customers', 'supplier': 'suppliers', 'account': 'others' };
 
         self.updateProgressbar();
+
+        // number of reconciliation items already displayed
+        var num_child_displayed = self.getChildren().length;
 
         // Remove children that should not be displayed
         if (self.mode !== 'all') {
             _.each(self.getChildren(), function(child) {
-                if (child.data.reconciliation_type !== self.mode) {
+                var type = plural[child.data.reconciliation_type];
+                if (type !== self.mode) {
+                    num_child_displayed--;
                     child.$el.slideUp(self.aestetic_animation_speed, function(){ child.destroy() });
                     child.data.displayed = false;
                 }
@@ -2277,7 +2322,7 @@ var manualReconciliation = abstractReconciliation.extend({
         var items_to_display = _.foldl(displayed_collections, function(prev, current){ return prev.concat(current.items) }, []);
         // Filter out those which are already displayed
         items_to_display = _.filter(items_to_display, function(item) { return item.displayed === false; })
-            .slice(0, self.num_reconciliations_fetched_in_batch - self.getChildren().length);
+            .slice(0, self.num_reconciliations_fetched_in_batch - num_child_displayed);
         _.each(items_to_display, function(item){
             children_promises.push(self.displayReconciliation(item, animate_entrance));
         });
@@ -2446,14 +2491,14 @@ var manualReconciliationLine = abstractReconciliationLine.extend({
         self.$(".button_reconcile").text(_t("Reconcile"));
         self.persist_action = "reconcile";
         if (self.get("mv_lines_selected").length < 2) {
-            self.$(".button_reconcile").text(_t("Done"));
+            self.$(".button_reconcile").text(_t("Skip"));
             self.persist_action = "mark_as_reconciled";
-        } else if (Math.abs(balance).toFixed(4) === "0.0000") {
+        } else if (self.monetaryIsZero(balance)) {
             self.$(".button_reconcile").addClass("btn-primary");
         }
 
         self.$(".tbody_open_balance").empty();
-        if (Math.abs(balance).toFixed(4) !== "0.0000" && self.get("mv_lines_selected").length > 1) {
+        if ((! self.monetaryIsZero(balance)) && self.get("mv_lines_selected").length > 1) {
             var debit = (balance > 0 ? self.formatCurrencies(balance, self.get("currency_id")) : "");
             var credit = (balance < 0 ? self.formatCurrencies(-1*balance, self.get("currency_id")) : "");
             var $line = $(QWeb.render("manual_reconciliation_line_open_balance", {
@@ -2596,6 +2641,8 @@ core.action_registry.add('manual_reconciliation_view', manualReconciliation);
 */
 
 return {
+    abstractReconciliation: abstractReconciliation,
+    abstractReconciliationLine: abstractReconciliationLine,
     bankStatementReconciliation: bankStatementReconciliation,
     manualReconciliation: manualReconciliation,
     bankStatementReconciliationLine: bankStatementReconciliationLine,

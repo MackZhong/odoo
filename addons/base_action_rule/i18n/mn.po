@@ -3,14 +3,17 @@
 # * base_action_rule
 # 
 # Translators:
+# Martin Trigaux <mat@odoo.com>, 2017
+# Otgonbayar.A <gobi.mn@gmail.com>, 2017
+# Khishigbat Ganbold <khishigbat@asterisk-tech.mn>, 2017
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo 9.0\n"
+"Project-Id-Version: Odoo Server 10.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-09 09:18+0000\n"
-"PO-Revision-Date: 2015-10-10 09:48+0000\n"
-"Last-Translator: Martin Trigaux\n"
-"Language-Team: Mongolian (http://www.transifex.com/odoo/odoo-9/language/mn/)\n"
+"POT-Creation-Date: 2017-06-23 13:27+0000\n"
+"PO-Revision-Date: 2017-06-23 13:27+0000\n"
+"Last-Translator: Khishigbat Ganbold <khishigbat@asterisk-tech.mn>, 2017\n"
+"Language-Team: Mongolian (https://www.transifex.com/odoo/teams/41243/mn/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -20,7 +23,7 @@ msgstr ""
 #. module: base_action_rule
 #: model:ir.ui.view,arch_db:base_action_rule.view_base_action_rule_form
 msgid "<b>Please choose the document type before setting the conditions.</b>"
-msgstr ""
+msgstr "<b>Нөхцлийг тохируулахаас өмнө баримтын төрлийг сонгоно уу.</b>"
 
 #. module: base_action_rule
 #: model:ir.ui.view,arch_db:base_action_rule.view_base_action_rule_form
@@ -29,9 +32,14 @@ msgid "Action Rule"
 msgstr "Үйл ажиллаагааны дүрэм"
 
 #. module: base_action_rule
+#: model:ir.model,name:base_action_rule.model_base_action_rule_line_test
+msgid "Action Rule Line Test"
+msgstr "Үйл ажиллагааны дүрмийн мөрийн тест"
+
+#. module: base_action_rule
 #: model:ir.model,name:base_action_rule.model_base_action_rule_lead_test
 msgid "Action Rule Test"
-msgstr ""
+msgstr "Үйл ажиллагааны дүрмийн тест"
 
 #. module: base_action_rule
 #: model:ir.model,name:base_action_rule.model_base_action_rule
@@ -55,6 +63,11 @@ msgid "Add Followers"
 msgstr "Дагагчид нэмэх"
 
 #. module: base_action_rule
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_lead_test_is_assigned_to_admin
+msgid "Assigned to admin user"
+msgstr "Админ хэрэглэгчид оноосон"
+
+#. module: base_action_rule
 #: model:ir.actions.act_window,name:base_action_rule.base_action_rule_act
 #: model:ir.ui.menu,name:base_action_rule.menu_base_action_rule_form
 msgid "Automated Actions"
@@ -63,7 +76,7 @@ msgstr "Үйл ажиллагааны автоматжуулалт"
 #. module: base_action_rule
 #: selection:base.action.rule,kind:0
 msgid "Based on Form Modification"
-msgstr ""
+msgstr "Маягтын өөрчлөлт дээр суурилсан"
 
 #. module: base_action_rule
 #: selection:base.action.rule,kind:0
@@ -73,7 +86,7 @@ msgstr "Хугацаат Нөхцөлд Суурилсан"
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_filter_pre_domain
 msgid "Before Update Domain"
-msgstr ""
+msgstr "Домэйныг шинэчлэхээс өмнө"
 
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_filter_pre_id
@@ -88,12 +101,12 @@ msgstr "Цуцлагдсан"
 #. module: base_action_rule
 #: model:ir.model.fields,help:base_action_rule.field_base_action_rule_lead_test_customer
 msgid "Check this box if this contact is a customer."
-msgstr ""
+msgstr "Хэрэв холбогч нь захиалагч бол үүнийг тэмдэглэ"
 
 #. module: base_action_rule
 #: model:ir.actions.act_window,help:base_action_rule.base_action_rule_act
 msgid "Click to setup a new automated action rule."
-msgstr ""
+msgstr "Шинэ автомат үйлдлийн дүрмийг тохируулах бол дарна уу."
 
 #. module: base_action_rule
 #: selection:base.action.rule.lead.test,state:0
@@ -103,7 +116,7 @@ msgstr "Хаалттай"
 #. module: base_action_rule
 #: model:ir.model.fields,help:base_action_rule.field_base_action_rule_on_change_fields
 msgid "Comma-separated list of field names that triggers the onchange."
-msgstr ""
+msgstr "onchange - г өдөөгч талбарын нэрсийн таслалаар тусгаарласан жагсаалт."
 
 #. module: base_action_rule
 #: model:ir.ui.view,arch_db:base_action_rule.view_base_action_rule_form
@@ -111,18 +124,16 @@ msgid "Conditions"
 msgstr "Нөхцөл"
 
 #. module: base_action_rule
-#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_create_date
-msgid "Create Date"
-msgstr "Үүсгэх огноо"
-
-#. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_create_uid
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_lead_test_create_uid
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_line_test_create_uid
 msgid "Created by"
 msgstr "Үүсгэгч"
 
 #. module: base_action_rule
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_create_date
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_lead_test_create_date
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_line_test_create_date
 msgid "Created on"
 msgstr "Үүсгэсэн"
 
@@ -132,6 +143,11 @@ msgid "Days"
 msgstr "Өдөр"
 
 #. module: base_action_rule
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_lead_test_deadline
+msgid "Deadline"
+msgstr "Эцсийн хугацаа"
+
+#. module: base_action_rule
 #: model:ir.ui.view,arch_db:base_action_rule.view_base_action_rule_form
 msgid "Delay After Trigger Date"
 msgstr "Саатлын дараах гарааны огноо"
@@ -139,10 +155,13 @@ msgstr "Саатлын дараах гарааны огноо"
 #. module: base_action_rule
 #: model:ir.model.fields,help:base_action_rule.field_base_action_rule_trg_date_range
 msgid ""
-"Delay after the trigger date.You can put a negative number if you need a "
-"delay before thetrigger date, like sending a reminder 15 minutes before a "
-"meeting."
-msgstr "Өдөөгч огнооны дараа азнана. Сөрөг тоо тавьж өдөөх огнооноос өмнө азналт хийлгэж бас болно, уулзалтаас 15 минутын өмнө сануулга явуулдагтай ижил."
+"Delay after the trigger date.\n"
+"                                    You can put a negative number if you need a delay before the\n"
+"                                    trigger date, like sending a reminder 15 minutes before a meeting."
+msgstr ""
+"Өдөөгч огнооны дараа азнана.\n"
+" Сөрөг тоо тавьж өдөөх огнооноос өмнө азналт хийлгэж бас болно, \n"
+"уулзалтаас 15 минутын өмнө сануулга өгдөгтэй ижил."
 
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_trg_date_range
@@ -157,8 +176,9 @@ msgstr "Саатлын төрөл"
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_display_name
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_lead_test_display_name
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_line_test_display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Дэлгэцийн Нэр"
 
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_filter_domain
@@ -191,7 +211,10 @@ msgid ""
 "Go to your \"Related Document Model\" page and set the filter parameters in "
 "the \"Search\" view (Example of filter based on Leads/Opportunities: "
 "Creation Date \"is equal to\" 01/01/2012)"
-msgstr "\"Холбогдох Баримтын Модель\" хуудас руу очиж \"Хайх\" харагдацад шүүлтүүрийн параметрийг тохируул (Сэжим/Боломж дээр суурилсан шүүлтүүрийн жишээ: Үүсгэсэн огноо \"тэнцүү\" 01/01/2012)"
+msgstr ""
+"\"Холбогдох Баримтын Модель\" хуудас руу очиж \"Хайх\" харагдацад "
+"шүүлтүүрийн параметрийг тохируул (Сэжим/Боломж дээр суурилсан шүүлтүүрийн "
+"жишээ: Үүсгэсэн огноо \"тэнцүү\" 01/01/2012)"
 
 #. module: base_action_rule
 #: selection:base.action.rule,trg_date_range_type:0
@@ -201,6 +224,7 @@ msgstr "Цаг"
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_id
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_lead_test_id
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_line_test_id
 msgid "ID"
 msgstr "ID"
 
@@ -210,7 +234,9 @@ msgstr "ID"
 msgid ""
 "If present, this condition must be satisfied before executing the action "
 "rule."
-msgstr "Хэрэв сонгосон бол үйлдлийн дүрмийг ажиллуулахын өмнө энэ нөхцөл нь биелж байх ёстой."
+msgstr ""
+"Хэрэв сонгосон бол үйлдлийн дүрмийг ажиллуулахын өмнө энэ нөхцөл нь биелж "
+"байх ёстой."
 
 #. module: base_action_rule
 #: model:ir.model.fields,help:base_action_rule.field_base_action_rule_filter_pre_domain
@@ -231,12 +257,15 @@ msgid ""
 "In this same \"Search\" view, select the menu \"Save Current Filter\", enter"
 " the name (Ex: Create the 01/01/2012) and add the option \"Share with all "
 "users\""
-msgstr "Ижил \"Хайх\" харагдац дотор \"Идэхтэй шүүлтүүр хадгалах\" цэсийг сонго, нэрийг оруул (Ж: 01/01/2012 үүсгэнэ), \"Бүх хэрэглэгчидтэй хуваалцах\" сонголтыг нэмнэ."
+msgstr ""
+"Ижил \"Хайх\" харагдац дотор \"Идэхтэй шүүлтүүр хадгалах\" цэсийг сонго, "
+"нэрийг оруул (Ж: 01/01/2012 үүсгэнэ), \"Бүх хэрэглэгчидтэй хуваалцах\" "
+"сонголтыг нэмнэ."
 
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_lead_test_customer
 msgid "Is a Customer"
-msgstr ""
+msgstr "Захиалагч эсэх"
 
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_lead_test_date_action_last
@@ -246,25 +275,38 @@ msgstr "Сүүлийн арга хэмжээ"
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule___last_update
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_lead_test___last_update
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_line_test___last_update
 msgid "Last Modified on"
-msgstr ""
-
-#. module: base_action_rule
-#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_last_run
-msgid "Last Run"
-msgstr "Сүүлд Ажилласан"
+msgstr "Сүүлийн засвар хийсэн огноо"
 
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_lead_test_write_uid
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_line_test_write_uid
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_write_uid
 msgid "Last Updated by"
 msgstr "Сүүлийн засвар хийсэн"
 
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_lead_test_write_date
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_line_test_write_date
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_write_date
 msgid "Last Updated on"
 msgstr "Сүүлийн засвар хийсэн огноо"
+
+#. module: base_action_rule
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_last_run
+msgid "Last run"
+msgstr "Сүүлд ажилласан"
+
+#. module: base_action_rule
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_line_test_lead_id
+msgid "Lead id"
+msgstr "Сэжмийн дугаар"
+
+#. module: base_action_rule
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_lead_test_line_ids
+msgid "Line ids"
+msgstr "Мөрийн дугаарууд"
 
 #. module: base_action_rule
 #: selection:base.action.rule,trg_date_range_type:0
@@ -282,6 +324,11 @@ msgid "Months"
 msgstr "Сар"
 
 #. module: base_action_rule
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_line_test_name
+msgid "Name"
+msgstr "Нэр"
+
+#. module: base_action_rule
 #: selection:base.action.rule.lead.test,state:0
 msgid "New"
 msgstr "Шинэ"
@@ -289,7 +336,7 @@ msgstr "Шинэ"
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_on_change_fields
 msgid "On Change Fields Trigger"
-msgstr ""
+msgstr "Өөрчлөлт дээр талбаруудын өдөөгч"
 
 #. module: base_action_rule
 #: selection:base.action.rule,kind:0
@@ -304,7 +351,7 @@ msgstr "Үүсгэх болон шинэчлэхэд"
 #. module: base_action_rule
 #: selection:base.action.rule,kind:0
 msgid "On Deletion"
-msgstr ""
+msgstr "Устгахад"
 
 #. module: base_action_rule
 #: selection:base.action.rule,kind:0
@@ -320,6 +367,11 @@ msgstr "Харилцагч"
 #: selection:base.action.rule.lead.test,state:0
 msgid "Pending"
 msgstr "Хүлээгдэж буй"
+
+#. module: base_action_rule
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_lead_test_priority
+msgid "Priority"
+msgstr "Урьтамж"
 
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_model_id
@@ -342,6 +394,8 @@ msgid ""
 "Select when the action must be run, and choose records and/or timing "
 "conditions."
 msgstr ""
+"Үйлдлийг хэзээ хийхийг сонгоод, бичлэгүүд ба/эсвэл цагийн нөхцлүүдийг "
+"сонгоно уу."
 
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_sequence
@@ -367,7 +421,7 @@ msgstr "Хариуцагчийг тааруулах"
 #. module: base_action_rule
 #: model:ir.ui.view,arch_db:base_action_rule.view_base_action_rule_form
 msgid "Set selection based on a search filter:"
-msgstr ""
+msgstr "Сонголтыг хайлтын шүүлтүүр дээр үндэслэн тохируулах:"
 
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_lead_test_state
@@ -380,19 +434,29 @@ msgid "Subject"
 msgstr "Сэдэв"
 
 #. module: base_action_rule
+#: model:ir.actions.server,name:base_action_rule.test_action
+msgid "Test Server Action"
+msgstr "Тестийн серверийн үйлдэл"
+
+#. module: base_action_rule
+#: model:ir.actions.server,name:base_action_rule.test_action_context
+msgid "Test Server Action Context"
+msgstr "Тестийн серверийн үйлдлийн агуулга"
+
+#. module: base_action_rule
 #: model:ir.filters,name:base_action_rule.test_filter_done
 msgid "Test lead in state 'done'"
-msgstr ""
+msgstr "'Хийгдсэн' төлөвтэй сэжмийг шалгах"
 
 #. module: base_action_rule
 #: model:ir.filters,name:base_action_rule.test_filter_draft
 msgid "Test lead in state 'draft'"
-msgstr ""
+msgstr "'Ноорог' төлөвтэй сэжмийг шалгах"
 
 #. module: base_action_rule
 #: model:ir.filters,name:base_action_rule.test_filter_open
 msgid "Test lead in state 'open'"
-msgstr ""
+msgstr "'Нээлттэй' төлөвтэй сэжмийг шалгах"
 
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_trg_date_id
@@ -413,20 +477,35 @@ msgid ""
 "                opportunity which still has status pending after 14 days might\n"
 "                trigger an automatic reminder email."
 msgstr ""
+"Янз бүрийн дэлгэцүүд дээр үйлдлийг автоматаар өдөөхийн \n"
+"тулд автомат үйлдлийг ашиглана уу. Жишээ: Тухайлсан нэг \n"
+"хэрэглэгчийн үүсгэсэн борлуулалтын сэжим нь тухайлсан \n"
+"борлуулалтын багт оноогдож болно. Эсвэл шийд хүлээсэн \n"
+"төлөвтэй 14 хоносон боломжийн хувьд автомат сануулга \n"
+"имэйлийг илгээж болно."
+
+#. module: base_action_rule
+#: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_line_test_user_id
+msgid "User id"
+msgstr "Хэрэглэгчийн дугаар"
 
 #. module: base_action_rule
 #: model:ir.model.fields,help:base_action_rule.field_base_action_rule_trg_date_calendar_id
 msgid ""
 "When calculating a day-based timed condition, it is possible to use a "
 "calendar to compute the date based on working days."
-msgstr "Өдөр дээр суурилсан хугацааны нөхцлийг тооцоолоход ажиллах өдөр дээр суурилсан цаглабарыг ашиглах боломжтой."
+msgstr ""
+"Өдөр дээр суурилсан хугацааны нөхцлийг тооцоолоход ажиллах өдөр дээр "
+"суурилсан цаглабарыг ашиглах боломжтой."
 
 #. module: base_action_rule
 #: model:ir.model.fields,help:base_action_rule.field_base_action_rule_trg_date_id
 msgid ""
-"When should the condition be triggered. If present, will be checked by the "
-"scheduler. If empty, will be checked at creation and update."
-msgstr "Нөхцөл хэдийд өдөөгдөхийг зааж өгдөг. Хэрэв одоо бол товлогчоор шалгагдах болно. Хэрэв хоосон бол үүсгэх болон засварлахад шалгагдана."
+"When should the condition be triggered.\n"
+"                                  If present, will be checked by the scheduler. If empty, will be checked at creation and update."
+msgstr ""
+"Нөхцөл хэдийд өдөөгдөхийг зааж өгдөг. \n"
+"Байвал товлогчоор шалгагдах болно. Хоосон бол үүсгэх болон шинэчлэх үед шалгагдана."
 
 #. module: base_action_rule
 #: model:ir.model.fields,field_description:base_action_rule.field_base_action_rule_kind
@@ -444,3 +523,4 @@ msgid ""
 "You may also use filters instead of choosing records. In order to create a "
 "new filter:"
 msgstr ""
+"Бичлэг сонгохын оронд шүүлтүүр ашиглах боломжтой. Шинэ шүүлтүүр үүсгэх бол:"

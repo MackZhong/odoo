@@ -1,31 +1,37 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from openerp import _, api, models
+from odoo import api, exceptions, models, _
 
 
 class Issue(models.Model):
     _name = "project.issue"
     _inherit = ['project.issue']
 
-    @api.one
+    @api.multi
     def get_access_action(self):
-        """ Override method that generated the link to access the document. Instead
-        of the classic form view, redirect to the post on the website directly """
-        return {
-            'type': 'ir.actions.act_url',
-            'url': '/my/issues/%s' % self.id,
-            'target': 'self',
-            'res_id': self.id,
-        }
+        """ Instead of the classic form view, redirect to website for portal users
+        that can read the issue. """
+        self.ensure_one()
+        if self.env.user.share:
+            try:
+                self.check_access_rule('read')
+            except exceptions.AccessError:
+                pass
+            else:
+                return {
+                    'type': 'ir.actions.act_url',
+                    'url': '/my/issues/%s' % self.id,
+                    'target': 'self',
+                    'res_id': self.id,
+                }
+        return super(Issue, self).get_access_action()
 
     @api.multi
-    def _notification_get_recipient_groups(self, message, recipients):
-        """ Override to set the access button: everyone can see an access button
-        on their notification email. It will lead on the website view of the
-        post. """
-        res = super(Issue, self)._notification_get_recipient_groups(message, recipients)
-        access_action = self._notification_link_helper('view', model=message.model, res_id=message.res_id)
-        for category, data in res.iteritems():
-            res[category]['button_access'] = {'url': access_action, 'title': _('View Issue')}
-        return res
+    def _notification_recipients(self, message, groups):
+        groups = super(Issue, self)._notification_recipients(message, groups)
+
+        for group_name, group_method, group_data in groups:
+            group_data['has_button_access'] = True
+
+        return groups

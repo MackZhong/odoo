@@ -18,14 +18,17 @@ var ScreenWidget = screens.ScreenWidget;
 var PaymentScreenWidget = screens.PaymentScreenWidget;
 var round_pr = utils.round_precision;
 
+pos_model.load_fields("account.journal", "pos_mercury_config_id");
+
 var _modelproto = pos_model.PosModel.prototype;
 pos_model.PosModel = pos_model.PosModel.extend({
     getOnlinePaymentJournals: function () {
+        var self = this;
         var online_payment_journals = [];
 
         $.each(this.journals, function (i, val) {
             if (val.pos_mercury_config_id) {
-                online_payment_journals.push({label:val.display_name, item:val.id});
+                online_payment_journals.push({label:self.getCashRegisterByJournalID(val.id).journal_id[1], item:val.id});
             }
         });
 
@@ -351,7 +354,7 @@ PaymentScreenWidget.include({
 
         if (! decodedMagtek) {
             this.gui.show_popup('error',{
-                'title': 'Could not read card',
+                'title': _t('Could not read card'),
                 'body':  _t('This can be caused by a badly executed swipe or by not having your keyboard layout set to US QWERTY (not US International).'),
             });
             return;
@@ -632,7 +635,7 @@ PaymentScreenWidget.include({
 
             if (already_swipe_pending) {
                 this.gui.show_popup('error',{
-                    'title': 'Error',
+                    'title': _t('Error'),
                     'body':  _t('One credit card swipe already pending.'),
                 });
             } else {
@@ -667,7 +670,7 @@ PaymentScreenWidget.include({
             }
         }
 
-        this._super();
+        this._super(force_validation);
     }
 });
 

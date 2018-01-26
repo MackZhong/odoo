@@ -68,7 +68,9 @@ var Input = Widget.extend( /** @lends instance.web.search.Input# */{
             "get_domain not implemented for widget " + this.attrs.type);
     },
     load_attrs: function (attrs) {
-        attrs.modifiers = attrs.modifiers ? JSON.parse(attrs.modifiers) : {};
+        if (!_.isObject(attrs.modifiers)) {
+            attrs.modifiers = attrs.modifiers ? JSON.parse(attrs.modifiers) : {};
+        }
         this.attrs = attrs;
     },
     /**
@@ -150,7 +152,7 @@ var Field = Input.extend( /** @lends instance.web.search.Field# */ {
         if (domain) {
             value_to_domain = function (facetValue) {
                 return new data.CompoundDomain(domain)
-                    .set_eval_context({self: self.value_from(facetValue)});
+                    .set_eval_context({self: self.value_from(facetValue), raw_value: facetValue.attributes.value});
             };
         } else {
             value_to_domain = function (facetValue) {
@@ -341,7 +343,22 @@ var DateField = Field.extend(/** @lends instance.web.search.DateField# */{
         return time.date_to_str(facetValue.get('value'));
     },
     complete: function (needle) {
-        var m = moment(needle);
+        // Make sure the needle has a correct format before the creation of the moment object. See
+        // issue https://github.com/moment/moment/issues/1407
+        var t, v;
+        try {
+            t = (this.attrs && this.attrs.type === 'datetime') ? 'datetime' : 'date';
+            v = formats.parse_value(needle, {'widget': t});
+        } catch (e) {
+            return $.when(null);
+        }
+
+        // THIS SHOULD BE FORWARDPORTED UP TO SAAS-15, NOT LATER
+        if (t === 'datetime') {
+            var m = moment.utc(v, 'YYYY-MM-DD HH:mm:ss');
+        } else {
+            var m = moment(v, 'YYYY-MM-DD');
+        }
         if (!m.isValid()) { return $.when(null); }
         var d = m.toDate();
         var date_string = formats.format_value(d, this.attrs);
@@ -539,6 +556,7 @@ var FilterGroup = Input.extend(/** @lends instance.web.search.FilterGroup# */{
         return {
             category: _t("Filter"),
             icon: this.icon,
+            separator: _t(" or "),
             values: values,
             field: this
         };
@@ -615,6 +633,7 @@ var FilterGroup = Input.extend(/** @lends instance.web.search.FilterGroup# */{
         });
     },
     toggle_filter: function (e) {
+        e.preventDefault();
         e.stopPropagation();
         this.toggle(this.filters[Number($(e.target).parent().data('index'))]);
     },
@@ -684,6 +703,7 @@ var GroupbyGroup = FilterGroup.extend({
         return {
             category: _t("Group By"),
             icon: this.icon,
+            separator: " > ",
             values: values,
             field: this.searchview._s_groupby
         };

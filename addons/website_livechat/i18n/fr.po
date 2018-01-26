@@ -3,14 +3,21 @@
 # * website_livechat
 # 
 # Translators:
+# Martin Trigaux <mat@odoo.com>, 2016
+# lucasdeliege <deliegelucas@gmail.com>, 2016
+# Fabri Yohann <psn@fabri.pw>, 2016
+# Maxime Chambreuil <mchambreuil@ursainfosystems.com>, 2016
+# Frédéric LIETART <stuff@thelinuxfr.org>, 2016
+# Lucas Deliege <lud@odoo.com>, 2016
+# Daniel & Delphine <dd2013@leschoupinous.net>, 2016
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo 9.0\n"
+"Project-Id-Version: Odoo Server 10.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-14 10:28+0000\n"
-"PO-Revision-Date: 2015-09-10 15:23+0000\n"
-"Last-Translator: Martin Trigaux\n"
-"Language-Team: French (http://www.transifex.com/odoo/odoo-9/language/fr/)\n"
+"POT-Creation-Date: 2016-09-07 08:57+0000\n"
+"PO-Revision-Date: 2016-09-07 08:57+0000\n"
+"Last-Translator: Daniel & Delphine <dd2013@leschoupinous.net>, 2016\n"
+"Language-Team: French (https://www.transifex.com/odoo/teams/41243/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -20,27 +27,27 @@ msgstr ""
 #. module: website_livechat
 #: model:ir.ui.view,arch_db:website_livechat.channel_page
 msgid "<span>Livechat Channel</span>"
-msgstr ""
+msgstr "<span>Canal de discussion instantanée</span>"
 
 #. module: website_livechat
 #: model:ir.model.fields,help:website_livechat.field_im_livechat_channel_website_description
 msgid "Description of the channel displayed on the website page"
-msgstr ""
+msgstr "Description de la chaîne affichée sur le site web"
 
 #. module: website_livechat
 #: model:ir.model,name:website_livechat.model_im_livechat_channel
 msgid "Livechat Channel"
-msgstr ""
+msgstr "Salon de messagerie instantanée"
 
 #. module: website_livechat
 #: model:ir.ui.view,arch_db:website_livechat.header_footer_custom
 msgid "Livechat Support"
-msgstr ""
+msgstr "Support via discussion instantanée"
 
 #. module: website_livechat
 #: model:ir.ui.view,arch_db:website_livechat.channel_list_page
 msgid "Livechat Support Channels"
-msgstr ""
+msgstr "Assistance par messagerie instantanée"
 
 #. module: website_livechat
 #: model:ir.ui.view,arch_db:website_livechat.channel_page
@@ -55,27 +62,17 @@ msgstr "Le"
 #. module: website_livechat
 #: model:ir.ui.view,arch_db:website_livechat.channel_page
 msgid "The Team"
-msgstr ""
-
-#. module: website_livechat
-#: model:ir.model.fields,help:website_livechat.field_im_livechat_channel_website_url
-msgid "The full URL to access the document through the website."
-msgstr ""
+msgstr "L'équipe"
 
 #. module: website_livechat
 #: model:ir.ui.view,arch_db:website_livechat.channel_list_page
 msgid "There is no public livechat channel to show."
-msgstr ""
+msgstr "Il n'y a pas de canal de discussion instantanée publique à afficher."
 
 #. module: website_livechat
 #: model:ir.ui.view,arch_db:website_livechat.channel_page
 msgid "This is no rating for this channel for now."
-msgstr ""
-
-#. module: website_livechat
-#: model:ir.model.fields,field_description:website_livechat.field_im_livechat_channel_website_published
-msgid "Visible in Website"
-msgstr ""
+msgstr "Il n'y a pas d'évaluation de ce canal pour le moment."
 
 #. module: website_livechat
 #: model:ir.model,name:website_livechat.model_website
@@ -86,12 +83,7 @@ msgstr "Site Web"
 #: model:ir.model.fields,field_description:website_livechat.field_website_channel_id
 #: model:ir.model.fields,field_description:website_livechat.field_website_config_settings_channel_id
 msgid "Website Live Chat Channel"
-msgstr ""
-
-#. module: website_livechat
-#: model:ir.model.fields,field_description:website_livechat.field_im_livechat_channel_website_url
-msgid "Website URL"
-msgstr "URL du site"
+msgstr "Canal de discussion instantanée du site web"
 
 #. module: website_livechat
 #: model:ir.model.fields,field_description:website_livechat.field_im_livechat_channel_website_description
@@ -101,9 +93,9 @@ msgstr "Description du site"
 #. module: website_livechat
 #: model:ir.ui.view,arch_db:website_livechat.channel_page
 msgid "last feedbacks"
-msgstr ""
+msgstr "Dernières discussions"
 
 #. module: website_livechat
 #: model:ir.model,name:website_livechat.model_website_config_settings
 msgid "website.config.settings"
-msgstr ""
+msgstr "website.config.settings"

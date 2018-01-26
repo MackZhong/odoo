@@ -10,6 +10,7 @@ var Registry = require('web.Registry');
 var session = require('web.session');
 var Widget = require('web.Widget');
 var QWeb = core.qweb;
+var _t = core._t;
 /**
  * Interface to be implemented by kanban fields.
  *
@@ -53,7 +54,7 @@ var FormatChar = AbstractField.extend({
         this.format_descriptor = _.extend({}, this.field, {'widget': this.$node.attr('widget')});
     },
     renderElement: function() {
-        this.$el.text(instance.web.format_value(this.field.raw_value, this.format_descriptor));
+        this.$el.text(formats.format_value(this.field.raw_value, this.format_descriptor));
     }
 });
 
@@ -138,7 +139,7 @@ var KanbanSelection = AbstractField.extend({
 
         var current_state = _.find(this.states, function(state) {
             return state.name === self.get('value');
-        });
+        }) || {state_class: ''};
 
         self.$el = $(QWeb.render("KanbanSelection", {
             current_state_class: current_state.state_class,
@@ -161,6 +162,19 @@ var KanbanSelection = AbstractField.extend({
     },
 });
 
+var KanbanLabelSelection = AbstractField.extend({
+
+    init: function(parent, field, $node) {
+        this._super.apply(this, arguments);
+        this.classes = this.options && this.options.classes || {};
+    },
+    renderElement: function() {
+        this._super.apply(this, arguments);
+        var lbl_class = this.classes[this.field.raw_value] || 'primary';
+        this.$el.addClass('label label-' + lbl_class).text(this.field.value);
+    },
+});
+
 var KanbanAttachmentImage =  AbstractField.extend({
     template: 'KanbanAttachmentImage',
 });
@@ -168,11 +182,13 @@ var KanbanAttachmentImage =  AbstractField.extend({
 
 /**
  * Kanban widgets: ProgressBar
+ * parameters
+ * - title: title of the gauge, displayed on top of the gauge
  * options
  * - editable: boolean if current_value is editable
  * - current_value: get the current_value from the field that must be present in the view
  * - max_value: get the max_value from the field that must be present in the view
- * - title: title of the gauge, displayed on top of the gauge
+ * - title: title of the gauge, displayed on top of the gauge --> not translated,  use parameter "title" instead
  * - on_change: action to call when cliking and setting a value
  */
 var KanbanProgressBar = AbstractField.extend({
@@ -192,7 +208,7 @@ var KanbanProgressBar = AbstractField.extend({
             readonly: true,
             value: record[this.options.current_value].raw_value,
             max_value: record[this.options.max_value].raw_value,
-            title: this.options.title,
+            title: _t(node && node[0].title || this.options.title),
             edit_max_value: this.options.edit_max_value,
         });
 
@@ -267,6 +283,7 @@ fields_registry
     .add('progress', KanbanProgressBar)
     .add('float_time', FormatChar)
     .add('monetary', KanbanMonetary)
+    .add('kanban_label_selection', KanbanLabelSelection)
     ;
 
 return {

@@ -3,14 +3,19 @@
 # * subscription
 # 
 # Translators:
+# Martin Trigaux <mat@odoo.com>, 2017
+# oihane <oihanecruce@gmail.com>, 2017
+# Esther Martín Menéndez <esthermartin001@gmail.com>, 2017
+# Gorka Toledo <gorka.toledo@gmail.com>, 2017
+# ibinka lete <ilete@fpbidasoa.net>, 2017
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo 9.0\n"
+"Project-Id-Version: Odoo Server 10.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-07 14:41+0000\n"
-"PO-Revision-Date: 2015-09-09 15:46+0000\n"
-"Last-Translator: Martin Trigaux\n"
-"Language-Team: Basque (http://www.transifex.com/odoo/odoo-9/language/eu/)\n"
+"POT-Creation-Date: 2016-09-07 08:57+0000\n"
+"PO-Revision-Date: 2016-09-07 08:57+0000\n"
+"Last-Translator: ibinka lete <ilete@fpbidasoa.net>, 2017\n"
+"Language-Team: Basque (https://www.transifex.com/odoo/teams/41243/eu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -29,7 +34,7 @@ msgstr "Gaituta"
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_create_uid
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_history_create_uid
 msgid "Created by"
-msgstr ""
+msgstr "Nork sortua"
 
 #. module: subscription
 #: model:ir.model.fields,field_description:subscription.field_subscription_document_create_date
@@ -37,7 +42,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_create_date
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_history_create_date
 msgid "Created on"
-msgstr ""
+msgstr "Noiz sortua"
 
 #. module: subscription
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_cron_id
@@ -80,7 +85,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_display_name
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_history_display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Izena erakutsi"
 
 #. module: subscription
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_doc_lines
@@ -91,7 +96,7 @@ msgstr ""
 #. module: subscription
 #: selection:subscription.subscription,state:0
 msgid "Done"
-msgstr ""
+msgstr "Done"
 
 #. module: subscription
 #: selection:subscription.subscription,state:0
@@ -106,12 +111,12 @@ msgstr "Okerra"
 #. module: subscription
 #: model:ir.model.fields,field_description:subscription.field_subscription_document_fields_field
 msgid "Field"
-msgstr ""
+msgstr "Arlo"
 
 #. module: subscription
 #: model:ir.model.fields,field_description:subscription.field_subscription_document_field_ids
 msgid "Fields"
-msgstr ""
+msgstr "Eremuak"
 
 #. module: subscription
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_date_init
@@ -121,7 +126,7 @@ msgstr ""
 #. module: subscription
 #: model:ir.ui.view,arch_db:subscription.view_subscription_filter
 msgid "Group By"
-msgstr ""
+msgstr "Taldekatu"
 
 #. module: subscription
 #: model:ir.model.fields,field_description:subscription.field_subscription_document_fields_id
@@ -129,7 +134,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_history_id
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: subscription
 #: model:ir.model.fields,help:subscription.field_subscription_document_active
@@ -153,7 +158,7 @@ msgstr ""
 
 #. module: subscription
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_interval_number
-msgid "Interval Qty"
+msgid "Internal Qty"
 msgstr ""
 
 #. module: subscription
@@ -175,7 +180,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_history_write_uid
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_write_uid
 msgid "Last Updated by"
-msgstr ""
+msgstr "Nork eguneratua"
 
 #. module: subscription
 #: model:ir.model.fields,field_description:subscription.field_subscription_document_fields_write_date
@@ -183,12 +188,12 @@ msgstr ""
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_history_write_date
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_write_date
 msgid "Last Updated on"
-msgstr ""
+msgstr "Noiz eguneratua"
 
 #. module: subscription
 #: selection:subscription.subscription,interval_type:0
 msgid "Months"
-msgstr ""
+msgstr "Hilabeteak"
 
 #. module: subscription
 #: model:ir.model.fields,field_description:subscription.field_subscription_document_name
@@ -204,13 +209,13 @@ msgstr "Oharrak"
 
 #. module: subscription
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_exec_init
-msgid "Number of documents"
+msgid "Number of Documents"
 msgstr ""
 
 #. module: subscription
 #: model:ir.model.fields,field_description:subscription.field_subscription_document_model
 msgid "Object"
-msgstr ""
+msgstr "Objektu"
 
 #. module: subscription
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_partner_id
@@ -219,7 +224,7 @@ msgid "Partner"
 msgstr "Kidea"
 
 #. module: subscription
-#: code:addons/subscription/subscription.py:101
+#: code:addons/subscription/models/subscription.py:92
 #, python-format
 msgid ""
 "Please provide another source document.\n"
@@ -268,7 +273,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_doc_source
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_history_document_id
 msgid "Source Document"
-msgstr ""
+msgstr "Source Document"
 
 #. module: subscription
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_state
@@ -286,6 +291,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_history_subscription_id
 #: model:ir.ui.view,arch_db:subscription.view_subscription_filter
 msgid "Subscription"
+msgstr ""
+
+#. module: subscription
+#: model:ir.ui.view,arch_db:subscription.view_subscription_form
+msgid "Subscription Data"
 msgstr ""
 
 #. module: subscription
@@ -322,15 +332,10 @@ msgid "Subscriptions"
 msgstr ""
 
 #. module: subscription
-#: model:ir.ui.view,arch_db:subscription.view_subscription_form
-msgid "Subsription Data"
-msgstr ""
-
-#. module: subscription
 #: model:ir.model.fields,field_description:subscription.field_subscription_subscription_user_id
 #: model:ir.ui.view,arch_db:subscription.view_subscription_filter
 msgid "User"
-msgstr ""
+msgstr "Erabiltzailea"
 
 #. module: subscription
 #: model:ir.model.fields,help:subscription.field_subscription_subscription_doc_source
@@ -341,10 +346,10 @@ msgstr ""
 #. module: subscription
 #: selection:subscription.subscription,interval_type:0
 msgid "Weeks"
-msgstr ""
+msgstr "Asteak"
 
 #. module: subscription
-#: code:addons/subscription/subscription.py:128
+#: code:addons/subscription/models/subscription.py:115
 #, python-format
 msgid "You cannot delete an active subscription!"
 msgstr ""

@@ -4,6 +4,7 @@ import mail_message_subtype
 import mail_tracking_value
 import mail_alias
 import mail_followers
+import mail_notification
 import mail_message
 import mail_mail
 import mail_thread
@@ -16,4 +17,5 @@ import res_config
 import update
 import ir_actions
 import ir_autovacuum
+import ir_model
 import html2text

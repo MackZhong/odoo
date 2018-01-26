@@ -72,6 +72,9 @@ var ProgressBar = Widget.extend({
 
     on_change_input: function(e) {
         var $input = $(e.target);
+        if(e.type === 'change' && !$input.is(':focus')) {
+            return;
+        }
         if(isNaN($input.val())) {
             this.do_warn(_t("Wrong value entered!"), _t("Only Integer Value should be valid."));
         } else {
@@ -115,7 +118,7 @@ var ProgressBar = Widget.extend({
         if(value <= max_value) {
             widthComplete = value/max_value * 100;
         } else {
-            widthComplete = max_value/value * 100;
+            widthComplete = 100;
         }
 
         this.$('.o_progress').toggleClass('o_progress_overflow', value > max_value);

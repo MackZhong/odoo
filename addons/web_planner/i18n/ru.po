@@ -3,14 +3,18 @@
 # * web_planner
 # 
 # Translators:
+# Максим Дронь <dronmax@gmail.com>, 2016
+# KingOPl Slav <87slava13@gmail.com>, 2016
+# Gennady Marchenko <gennadym@gmail.com>, 2016
+# Илья Владимирович Кучаев <kuchaev.iv@gmail.com>, 2016
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo 9.0\n"
+"Project-Id-Version: Odoo Server 10.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-29 10:26+0000\n"
-"PO-Revision-Date: 2015-10-10 11:15+0000\n"
-"Last-Translator: Martin Trigaux\n"
-"Language-Team: Russian (http://www.transifex.com/odoo/odoo-9/language/ru/)\n"
+"POT-Creation-Date: 2016-11-14 15:55+0000\n"
+"PO-Revision-Date: 2016-11-14 15:55+0000\n"
+"Last-Translator: Илья Владимирович Кучаев <kuchaev.iv@gmail.com>, 2016\n"
+"Language-Team: Russian (https://www.transifex.com/odoo/teams/41243/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -18,42 +22,27 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
 
 #. module: web_planner
-#. openerp-web
-#: code:addons/web_planner/static/src/js/web_planner_common.js:426
-#: code:addons/web_planner/static/src/xml/web_planner.xml:17
-#, python-format
-msgid "About"
-msgstr ""
-
-#. module: web_planner
-#. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:27
-#, python-format
-msgid "Activate the developer mode"
-msgstr ""
-
-#. module: web_planner
 #: model:ir.model.fields,field_description:web_planner.field_web_planner_active
 #: model:ir.ui.view,arch_db:web_planner.web_planner_view_search
 msgid "Active"
-msgstr "Активен"
+msgstr "Активно"
 
 #. module: web_planner
 #. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:41
+#: code:addons/web_planner/static/src/js/web_planner_common.js:436
 #, python-format
-msgid "Copyright © 2004-2015 Odoo S.A."
-msgstr ""
+msgid "Cancel"
+msgstr "Отменить"
 
 #. module: web_planner
 #: model:ir.model.fields,field_description:web_planner.field_web_planner_create_uid
 msgid "Created by"
-msgstr "Создано"
+msgstr "Создал"
 
 #. module: web_planner
 #: model:ir.model.fields,field_description:web_planner.field_web_planner_create_date
 msgid "Created on"
-msgstr "Создан"
+msgstr "Создано"
 
 #. module: web_planner
 #: model:ir.model.fields,field_description:web_planner.field_web_planner_data
@@ -63,28 +52,7 @@ msgstr "Данные"
 #. module: web_planner
 #: model:ir.model.fields,field_description:web_planner.field_web_planner_display_name
 msgid "Display Name"
-msgstr ""
-
-#. module: web_planner
-#. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:15
-#, python-format
-msgid "Documentation"
-msgstr ""
-
-#. module: web_planner
-#. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:44
-#, python-format
-msgid "For more information visit"
-msgstr ""
-
-#. module: web_planner
-#. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:43
-#, python-format
-msgid "GNU Lesser General Public License"
-msgstr ""
+msgstr "Отображаемое имя"
 
 #. module: web_planner
 #: model:ir.model.fields,field_description:web_planner.field_web_planner_id
@@ -95,8 +63,15 @@ msgstr "ID"
 #: model:ir.model.fields,help:web_planner.field_web_planner_active
 msgid ""
 "If the active field is set to False, it will allow you to hide the planner. "
-"This change requires a refreshing a your page."
+"This change requires a refresh of your page."
 msgstr ""
+"Если значение активного поля False, то это позволит Вам скрыть планировщик. "
+"Данное изменение требует обновления страницы."
+
+#. module: web_planner
+#: model:ir.ui.view,arch_db:web_planner.web_planner_view_search
+msgid "Inactive"
+msgstr "Неактивно"
 
 #. module: web_planner
 #: model:ir.model.fields,field_description:web_planner.field_web_planner___last_update
@@ -106,7 +81,7 @@ msgstr "Последний раз изменено"
 #. module: web_planner
 #: model:ir.model.fields,field_description:web_planner.field_web_planner_write_uid
 msgid "Last Updated by"
-msgstr "Последний раз обновлено"
+msgstr "Последний раз обновил"
 
 #. module: web_planner
 #: model:ir.model.fields,field_description:web_planner.field_web_planner_write_date
@@ -115,17 +90,10 @@ msgstr "Последний раз обновлено"
 
 #. module: web_planner
 #. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:43
-#, python-format
-msgid "Licenced under the terms of"
-msgstr ""
-
-#. module: web_planner
-#. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:82
+#: code:addons/web_planner/static/src/xml/web_planner.xml:31
 #, python-format
 msgid "Mark As Done"
-msgstr ""
+msgstr "Отметить как сделанное"
 
 #. module: web_planner
 #: model:ir.model.fields,field_description:web_planner.field_web_planner_menu_id
@@ -135,87 +103,49 @@ msgstr "Меню"
 #. module: web_planner
 #: model:ir.model.fields,field_description:web_planner.field_web_planner_name
 msgid "Name"
-msgstr "Название"
+msgstr "Имя"
 
 #. module: web_planner
 #. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:85
+#: code:addons/web_planner/static/src/xml/web_planner.xml:34
 #, python-format
 msgid "Next step"
-msgstr ""
+msgstr "Следующий шаг"
 
 #. module: web_planner
 #. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:32
+#: code:addons/web_planner/static/src/js/web_planner_common.js:446
 #, python-format
-msgid "Odoo (Formerly OpenERP)"
-msgstr ""
+msgid "Odoo Enterprise"
+msgstr "Odoo для Предприятий"
 
 #. module: web_planner
-#. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:42
-#, python-format
-msgid "Odoo S.A."
-msgstr ""
-
-#. module: web_planner
-#. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:42
-#, python-format
-msgid "Odoo is a trademark of"
-msgstr ""
-
-#. module: web_planner
-#. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:44
-#, python-format
-msgid "Odoo.com"
-msgstr ""
-
-#. module: web_planner
-#. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:9
-#, python-format
-msgid "Open Help Menu"
-msgstr ""
-
-#. module: web_planner
-#. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:14
 #: model:ir.model,name:web_planner.model_web_planner
 #: model:ir.ui.view,arch_db:web_planner.web_planner_view_search
 #: model:ir.ui.view,arch_db:web_planner.web_planner_view_tree
-#, python-format
 msgid "Planner"
-msgstr ""
+msgstr "Планировщик"
 
 #. module: web_planner
 #: model:ir.model.fields,field_description:web_planner.field_web_planner_planner_application
 msgid "Planner Application"
-msgstr ""
+msgstr "Приложение планирования"
 
 #. module: web_planner
 #: model:ir.model.fields,field_description:web_planner.field_web_planner_tooltip_planner
 msgid "Planner Tooltips"
-msgstr ""
+msgstr "Подсказки планировщика"
 
 #. module: web_planner
 #: model:ir.actions.act_window,name:web_planner.web_planner_action
 #: model:ir.ui.menu,name:web_planner.web_planner_menu
 msgid "Planners"
-msgstr ""
+msgstr "Планировщики"
 
 #. module: web_planner
 #: model:ir.model.fields,field_description:web_planner.field_web_planner_progress
 msgid "Progress Percentage"
-msgstr ""
-
-#. module: web_planner
-#. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:16
-#, python-format
-msgid "Support"
-msgstr ""
+msgstr "Прогресс в процентах"
 
 #. module: web_planner
 #: model:ir.model.fields,field_description:web_planner.field_web_planner_view_id
@@ -223,13 +153,8 @@ msgid "Template"
 msgstr "Шаблон"
 
 #. module: web_planner
-#: model:ir.ui.view,arch_db:web_planner.web_planner_view_search
-msgid "Unactive"
-msgstr "Неактивно"
-
-#. module: web_planner
 #. openerp-web
-#: code:addons/web_planner/static/src/xml/web_planner.xml:36
+#: code:addons/web_planner/static/src/js/web_planner_common.js:430
 #, python-format
-msgid "Version"
-msgstr ""
+msgid "Upgrade now"
+msgstr "Обновить"
